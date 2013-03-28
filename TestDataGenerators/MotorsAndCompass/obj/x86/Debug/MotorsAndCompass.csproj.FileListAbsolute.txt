@@ -1,0 +1,5 @@
+C:\Users\semenyk.r\Documents\GitHub\Arduino-Rover5\TestDataGenerators\MotorsAndCompass\bin\Debug\MotorsAndCompass.exe
+C:\Users\semenyk.r\Documents\GitHub\Arduino-Rover5\TestDataGenerators\MotorsAndCompass\bin\Debug\MotorsAndCompass.pdb
+C:\Users\semenyk.r\Documents\GitHub\Arduino-Rover5\TestDataGenerators\MotorsAndCompass\obj\x86\Debug\ResolveAssemblyReference.cache
+C:\Users\semenyk.r\Documents\GitHub\Arduino-Rover5\TestDataGenerators\MotorsAndCompass\obj\x86\Debug\MotorsAndCompass.exe
+C:\Users\semenyk.r\Documents\GitHub\Arduino-Rover5\TestDataGenerators\MotorsAndCompass\obj\x86\Debug\MotorsAndCompass.pdb
