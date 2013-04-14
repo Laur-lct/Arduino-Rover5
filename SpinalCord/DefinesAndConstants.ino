@@ -1,3 +1,3 @@
-//All pins and our permament constants should be difined here
+//All pins and our permament constants should be defined here
 
-#define pBuiltInLed 13
+#define DEBUG 1 //debug configuration flag
