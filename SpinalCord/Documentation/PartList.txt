@@ -1,0 +1,42 @@
+/*List of ordered/available parts, with description/datasheet links*/
+/*Not all parts have to be used.*/
+Part Name									Quantity	Description, datasheet or user manual links
+					
+/* Chassis and prototyping components */
+Rover5 Robot Platform						1			https://www.sparkfun.com/products/10336
+Rover5 Expansion Plate (Wide)				2			http://www.pololu.com/catalog/product/1541
+Rover5 Expansion Plate (Narrow)				1			http://www.pololu.com/catalog/product/1531
+Pan/Tilt Bracket							1			https://www.sparkfun.com/products/10335
+Robot Wheels Set							1			http://dx.com/p/193473
+Breadbords Set								1			http://dx.com/p/151160
+2300mAh Ni-MH Rechargeable AA Batteries		3			http://dx.com/p/7415
+3W Solar Panel 138X160						4			http://www.seeedstudio.com/depot/3w-solar-panel-138x160-p-954.html?cPath=155
+
+/* Electronics, etc */
+Arduino Mega Pro 5V							1			https://www.sparkfun.com/products/11007
+Rover5 Motor Driver Board					1			https://www.sparkfun.com/products/11593
+Logic Level Converter						2			https://www.sparkfun.com/products/8745
+FTDI Basic Breakout Arduino USB				1			http://dx.com/p/142041
+JY-MCU Arduino Bluetooth Module				1			http://dx.com/p/104299
+DC Voltage Stabilizer/Regulator Module		2			http://dx.com/p/126106
+Pushbutton Power Switch SV					1			http://www.pololu.com/catalog/product/750
+
+/* Sensors */
+Mini Photocell								4			https://www.sparkfun.com/products/9088
+Miniature Solar Cell						2			https://www.sparkfun.com/products/9962
+20A Current Sensor							1			http://dx.com/p/148656
+Integrated Compass, Gyro, Accelerometer		1			http://dx.com/p/148436
+IR Digital Distance Sensor 2-30cm			4			http://dx.com/p/121517
+IR Digital Distance Sensor 2-10cm			4			http://www.pololu.com/catalog/product/1134
+IR Analog Distance Sensor 10-80cm			1			http://www.pololu.com/catalog/product/136
+Ultra Sonic range measurement module		1			http://www.seeedstudio.com/depot/ultra-sonic-range-measurement-module-p-626.html?cPath=144_149
+Red Laser Module - Focused Line 			1			http://dx.com/p/5928
+Red Laser Module - Focused Cross 			1			http://dx.com/p/5942
+
+/* Servos */
+MG995 Tower Pro Servo						2			http://dx.com/p/12832
+9g Mini Servo								2			http://dx.com/p/20087
+Hi Speed Micro Servo						2			http://dx.com/p/10789
+
+Unsorted:
+Some motors, wires, transistors, capacitors, resistors, voltage regulators, various LEDs and other small parts are also available .
