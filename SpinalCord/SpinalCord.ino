@@ -1,4 +1,4 @@
-//main file with entry point sdfgvsd
+//main file with entry point
 
 
 
