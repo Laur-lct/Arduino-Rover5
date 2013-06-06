@@ -1,0 +1,23 @@
+D	- Digital Pin
+PWM	- PulsWaveModulation-enabled Pin
+A	- Analog Pin
+S	- Pin with special functions
+
+
+Motor control  	- 16(8D, 4PWM, 4A) done
+Power control 	- 3	(1D, 2A) done
+USB				- 2	(S) done
+BlueTooth		- 2	(S) done
+Navigation		- 2	(S) done	
+IR Bumper		- 6	(D) done
+UltraSonic		- 1	(D)	done
+IR Analog		- 2	(1D, 1A) done 
+Servos			- 2	(D) +3D done
+Laser			- 1	(D) done
+Light Sensors	- 2	(A) done
+BrainCharge ctrl- 1 (D) done
+LED Lights		- 1 (PWM) done
+Status LEDs		- 2 (PWM) done
+Mode Button		- 1	(D) done
+
+Total 			- 44+3 (6S,22+3D,9A,7PWM)

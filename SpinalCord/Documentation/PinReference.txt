@@ -1,74 +1,77 @@
 /* what connected to which arduino mega pin */
 
 
-0	
-1
-2
+0	USB_RX
+1	USB_TX
+2	Mode Button
 3
-4
-5
-6
-7
+4	Motor Control Speed Ch1
+5	Motor Control Speed Ch2
+6	Motor Control Speed Ch3
+7	Motor Control Speed Ch4
 8
 9
 10
-11
-12
-13
+11	LED Lights  On/Off
+12	Status LED 2 
+13  Status LED 1
+
 14
 15
-16
-17
+16	BTooth TX
+17	BTooth RX
 18
 19
-20
-21
-22
-23
-24
-25
-26
+20	Navigation Module
+21	Navigation Module
+
+22	IR Bumper FrontLeft
+23	IR Bumper FrontRight
+24	IR Bumper BackLeft
+25	IR Bumper BackRight
+26	IR Bumper Floor
 27
-28
-29
-30
+28	IR Bumper On/Off
+29	US & IR Analog On/Off
+30	Ultrasonic Trigger/Signal
 31
-32
-33
+32	Head Pan Servo
+33	Head Tilt Servo
 34
 35
-36
-37
-38
-39
-40
-41
-42
-43
+36	Motor Control Direction Ch1
+37	Motor Control Encoder Ch1
+38	Motor Control Direction Ch2
+39	Motor Control Encoder Ch2
+40	Motor Control Direction Ch3
+41	Motor Control Encoder Ch3
+42	Motor Control Direction Ch4
+43	Motor Control Encoder Ch4
 44
 45
 46
-47
-48
-49
+47	Brain Charge On/Off
+48	Power Control SelfOff
+49	Laser On/Off
+
 50
 51
 52
 53
 
-A0
-A1
-A2
-A3
-A4
-A5
-A6
+A0	Motor Control Current Ch1
+A1	Motor Control Current Ch2
+A2	Motor Control Current Ch3
+A3	Motor Control Current Ch4
+A4	Power Control Current
+A5	Power Control Voltage
+A6	IR Analog Signal
 A7
 A8
 A9
 A10
 A11
 A12
-A13
-A14
+A13	Light Intensity Left
+A14	Light Intensity Right
 A15
