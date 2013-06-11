@@ -12,9 +12,9 @@
 8
 9
 10
-11	LED Lights  On/Off
-12	Status LED 2 
-13  Status LED 1
+11
+12
+13	Status LED 1
 
 14
 15
@@ -48,8 +48,8 @@
 42	Motor Control Direction Ch4
 43	Motor Control Encoder Ch4
 44
-45
-46
+45	LED Lights  On/Off
+46	Status LED 2
 47	Brain Charge On/Off
 48	Power Control SelfOff
 49	Laser On/Off
