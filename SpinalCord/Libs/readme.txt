@@ -1,0 +1,1 @@
+copy these folders to <arduino IDE folder>\libraries\
