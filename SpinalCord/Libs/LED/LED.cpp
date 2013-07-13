@@ -22,6 +22,7 @@
 LED::LED(uint8_t ledPin){
 	this->pin=ledPin;
 	this->status=LOW;
+	this->blinkNoBlock_time=0;
 	pinMode(this->pin,OUTPUT);
 }
 
@@ -50,6 +51,18 @@ void LED::blink(unsigned int time, byte times){
 	}
 }
 
+void LED::blinkNoBlock(unsigned int time){
+	on();
+	blinkNoBlock_millis = millis();
+	blinkNoBlock_time = time;
+}
+
+void LED::updateBlinkNoBlock(){
+	if (blinkNoBlock_time > 0 && millis()-blinkNoBlock_millis > blinkNoBlock_time){
+		off();
+		blinkNoBlock_time=0;
+	}
+}
 //assume PWM
 void LED::setValue(byte val){
 	analogWrite(pin,val);

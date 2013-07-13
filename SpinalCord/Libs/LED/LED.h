@@ -30,12 +30,16 @@ class LED{
 	void off();
 	void toggle();
 	void blink(unsigned int time, byte times=1);
+	void blinkNoBlock(unsigned int time);
+	void updateBlinkNoBlock();
 	void setValue(byte val);
 	void fadeIn(unsigned int time);
 	void fadeOut(unsigned int time);
   private:
 	bool status;
 	uint8_t pin;
+	unsigned long blinkNoBlock_millis;
+	unsigned int blinkNoBlock_time;
 };
 
 extern LED DEBUG_LED;
@@ -44,6 +48,7 @@ extern LED DEBUG_LED;
 
 /*
 || @changelog
+|| | 1.2 2013-07-13 - Roman Semenyk	   : Added blinkNoBlock(unsigned int time)
 || | 1.1 2009-05-07 - Alexander Brevig : Added blink(uint,byte), requested by: Josiah Ritchie - josiah@josiahritchie.com
 || | 1.1 2009-04-07 - Alexander Brevig : Altered API
 || | 1.0 2009-04-17 - Alexander Brevig : Initial Release

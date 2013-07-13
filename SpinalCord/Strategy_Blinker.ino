@@ -1,19 +1,24 @@
 //this is test robot strategy to show the principle.
 
-int blinkerDelay=0;
+int blinkerDelay=200;
 void StartStrategyBlinker() {
   //set do all preparations here
+  DBG_ONLY(Serial.println("Strat blinker Start"));
+  DBG_ONLY(delay(1000));
   blinkerDelay=200;
 }
 
 void RunStrategyBlinker() {
-  statusLED1->toggle();
-  statusLED2->toggle();
-  delay(200);
+  statusLED2->setValue(1);
+  //DBG_ONLY(Serial.println("blinking..."));
+  delay(blinkerDelay);
+  statusLED2->off();
+  delay(blinkerDelay);
 }
 
 void FinishStrategyBlinker() {
   //finish stuff before end
-  statusLED1->off();
+  DBG_ONLY(Serial.println("Strat blinker finish"));
+  DBG_ONLY(delay(1000));
   statusLED2->off();
 }

@@ -1,8 +1,8 @@
 //main file with entry point
 #include "Pinout.h"
 #include "Constants.h"
-#include <Bounce.h>
 #include <LED.h>
+#include <EEPROM.h>
 
 typedef void (*functionPtr)();
 
@@ -10,9 +10,6 @@ typedef void (*functionPtr)();
 byte mode; 
 byte prevMode;
 boolean isModeUpdated = false;
-
-// debounce obj ptr Read more: http://playground.arduino.cc/code/bounce
-Bounce *buttonDebouncer;
 
 // LED wrapper ptrs Read more: http://playground.arduino.cc/Code/LED
 LED *statusLED1;
@@ -24,78 +21,107 @@ LED *statusLED2;
 // [2][MODES_MAX] - finish methods
 functionPtr strategyMethods[3][MODES_MAX];
 
-
 void setup() {
   // put your setup code here, to run once:
   InitStatusLeds();
-  //indicate serup is running
-  statusLED1->on();
+  InitAllOutputPins();
+  statusLED1->on(); //indicate serup is running
+  
+  DBG_ONLY(Serial.begin(38400));
+  DBG_ONLY(Serial.println("Debug mode"));
+  
   InitModeAndModeButton();
   InitStrategyMethods();
-  
-  //simulate hard work
-  delay(1000);
-  
   //setup finished
   statusLED1->off();
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  if (CheckMode()) {
-    isModeUpdated = false;
-    do {
-      strategyMethods[2][prevMode](); // finish any operations for prevMode here
-      strategyMethods[0][mode](); // init new strategy according to the new mode value
-    } while (isModeUpdated);
+  while (isModeUpdated) {
+    isModeUpdated=false;
+    statusLED2->blink(100);
+    strategyMethods[2][prevMode](); // finish any operations for prevMode here
+    strategyMethods[0][mode](); // init new strategy according to the new mode value
   }
   strategyMethods[1][mode]();
+  DBG_ONLY(Serial.print("Batt voltage="));
+  DBG_ONLY(Serial.println(analogRead(PA_BATT_VOLTAGE)));
 }
 
+//sets pointers for strategies methods
 void InitStrategyMethods() {
-  // strategy methods here
+  //start methods
   strategyMethods[0][0] = StartStrategyBlinker;
-  strategyMethods[0][1] = 0;
-  strategyMethods[0][2] = 0;
+  strategyMethods[0][1] = StartStrategyLightSeeker;
+  //strategyMethods[0][2] = Dummy;
   
+  //run methods
   strategyMethods[1][0] = RunStrategyBlinker;
-  strategyMethods[1][1] = 0;
-  strategyMethods[1][2] = 0;
+  strategyMethods[1][1] = RunStrategyLightSeeker;
+  //strategyMethods[1][2] = Dummy;
   
+  //finish methods
   strategyMethods[2][0] = FinishStrategyBlinker;
-  strategyMethods[2][1] = 0;
-  strategyMethods[2][2] = 0;
+  strategyMethods[2][1] = FinishStrategyLightSeeker;
+  //strategyMethods[2][2] = Dummy;
 }
 
+//loops through button-selectable modes. Triggered by button interrupt
+unsigned long lastMillis = 0;
+void ModeButtonInterruptHandler() {
+  if (millis() - lastMillis > 300) {
+    lastMillis=millis();
+    if (mode+1 < MODES_MIN_BROWSABLE || mode+1 >= MODES_MAX)
+      SetMode(MODES_MIN_BROWSABLE);
+    else 
+      SetMode(mode+1);
+  }
+}
+
+// set last mode, attach button interrupt
 void InitModeAndModeButton() {
   pinMode(PI_BUTTON_MODE, INPUT);
-  buttonDebouncer = &Bounce(PI_BUTTON_MODE, 5);
-  //TODO: reload last from memory
-  mode = 0;
-  prevMode = mode;
+  attachInterrupt(0, ModeButtonInterruptHandler, FALLING);
+  mode = EEPROM.read(MEMADDR_LASTMODE);
+  prevMode = 0;
+  isModeUpdated = true;
 }
 
+//set leds
 void InitStatusLeds() {
-  pinMode(PP_LED_STATUS_1, OUTPUT);
-  pinMode(PP_LED_STATUS_2, OUTPUT);
-  digitalWrite(PP_LED_STATUS_1,0);
-  digitalWrite(PP_LED_STATUS_2,0);
-  statusLED1 = &LED(PP_LED_STATUS_1);
-  statusLED2 = &LED(PP_LED_STATUS_2);
+  statusLED1 = new LED(PP_LED_STATUS_1);
+  statusLED2 = new LED(PP_LED_STATUS_2);
+  statusLED1->off();
+  statusLED2->off();
 }
 
-//checks and changes mode value
-boolean CheckMode() {
-  if (buttonDebouncer->update()) {
-    if(buttonDebouncer->read() == HIGH) {
-      if (!SetMode(mode+1))
-        SetMode(0);
-      buttonDebouncer->rebounce(500);
-      //blocks for 100 miliseconds!!
-      statusLED2->blink(100);
-    }
-  }
-  return isModeUpdated;
+//sets pinmode of all output pins and writes initial values
+void InitAllOutputPins(){
+  pinMode(PO_SONICSENSOR_TRIGGER, OUTPUT);
+  digitalWrite(PO_SONICSENSOR_TRIGGER,LOW);
+  
+  pinMode(PO_IRBUMPER_SWITCH,OUTPUT);
+  digitalWrite(PO_IRBUMPER_SWITCH,LOW);
+  
+  
+  pinMode(PP_MOTOR_SPD_TL,OUTPUT);
+  digitalWrite(PP_MOTOR_SPD_TL,LOW);
+  pinMode(PP_MOTOR_SPD_TR,OUTPUT);
+  digitalWrite(PP_MOTOR_SPD_TR,LOW);
+  pinMode(PP_MOTOR_SPD_BL,OUTPUT);
+  digitalWrite(PP_MOTOR_SPD_BL,LOW);
+  pinMode(PP_MOTOR_SPD_BR,OUTPUT);
+  digitalWrite(PP_MOTOR_SPD_BR,LOW);
+  
+  pinMode(PO_MOTOR_DIR_TL,OUTPUT);
+  pinMode(PO_MOTOR_DIR_TR,OUTPUT);
+  pinMode(PO_MOTOR_DIR_BL,OUTPUT);
+  pinMode(PO_MOTOR_DIR_BR,OUTPUT);
+  digitalWrite(PO_MOTOR_DIR_TL,MOTOR_FWD_TL);
+  digitalWrite(PO_MOTOR_DIR_TR,MOTOR_FWD_TR);
+  digitalWrite(PO_MOTOR_DIR_BL,MOTOR_FWD_BL);
+  digitalWrite(PO_MOTOR_DIR_BR,MOTOR_FWD_BR);
 }
 
 // tries set the mode and isModeUpdated flag
@@ -104,9 +130,10 @@ boolean SetMode(byte newMode) {
     prevMode = mode;
     mode = newMode;
     isModeUpdated = true;
-    //TODO: save last mode to memory
+    EEPROM.write(MEMADDR_LASTMODE, mode);
+    DBG_ONLY(Serial.print("Mode is set to "));
+    DBG_ONLY(Serial.println(mode));
     return true;
   }
   return false;
 }
-
