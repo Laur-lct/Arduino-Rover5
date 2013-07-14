@@ -16,10 +16,10 @@ void StartStrategyLightSeeker() {
 void RunStrategyLightSeeker() {
   lightLeft = (lightLeft+analogRead(PA_LIGHTSENSOR_L))/2;
   lightRight = (lightRight+analogRead(PA_LIGHTSENSOR_R))/2;
-  //DBG_ONLY(Serial.print("Light: left="));
-  //DBG_ONLY(Serial.print(lightLeft));
-  //DBG_ONLY(Serial.print(", right="));
-  //DBG_ONLY(Serial.println(lightRight));
+  DBG_ONLY(Serial.print("Light: left="));
+  DBG_ONLY(Serial.print(lightLeft));
+  DBG_ONLY(Serial.print(", right="));
+  DBG_ONLY(Serial.println(lightRight));
   
   if (lightLeft- lightRight > 6){
     cntrL++;
@@ -40,36 +40,19 @@ void RunStrategyLightSeeker() {
   
   if (cntrL > 20){
     cntrL--;
-    digitalWrite(PO_MOTOR_DIR_TL,!MOTOR_FWD_TL);
-    digitalWrite(PO_MOTOR_DIR_TR,MOTOR_FWD_TR);
-    digitalWrite(PO_MOTOR_DIR_BL,!MOTOR_FWD_BL);
-    digitalWrite(PO_MOTOR_DIR_BR,MOTOR_FWD_BR);
-    analogWrite(PP_MOTOR_SPD_TL,60);
-    analogWrite(PP_MOTOR_SPD_TR,60);
-    analogWrite(PP_MOTOR_SPD_BL,60);
-    analogWrite(PP_MOTOR_SPD_BR,60);
+    TurnLeft(60);
   }
   else if (cntrR > 20){
     cntrR--;
-    digitalWrite(PO_MOTOR_DIR_TL,MOTOR_FWD_TL);
-    digitalWrite(PO_MOTOR_DIR_TR,!MOTOR_FWD_TR);
-    digitalWrite(PO_MOTOR_DIR_BL,MOTOR_FWD_BL);
-    digitalWrite(PO_MOTOR_DIR_BR,!MOTOR_FWD_BR);
-    analogWrite(PP_MOTOR_SPD_TL,60);
-    analogWrite(PP_MOTOR_SPD_TR,60);
-    analogWrite(PP_MOTOR_SPD_BL,60);
-    analogWrite(PP_MOTOR_SPD_BR,60);
+    TurnRight(60);
   }
   else {
-    analogWrite(PP_MOTOR_SPD_TL,0);
-    analogWrite(PP_MOTOR_SPD_TR,0);
-    analogWrite(PP_MOTOR_SPD_BL,0);
-    analogWrite(PP_MOTOR_SPD_BR,0);
+    StopMoving();
   }
   delay(100);
 }
 
 void FinishStrategyLightSeeker() {
   DBG_ONLY(Serial.println("Strat seeker finish"));
-  DBG_ONLY(delay(1000));
+  StopMoving();
 }

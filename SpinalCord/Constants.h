@@ -14,10 +14,14 @@
 #define MODE_BLINKER 0 // genius strategy of blinking with status led 2 
 
 //indicates correct forward direction flag for each side.
-#define MOTOR_FWD_TL 0
-#define MOTOR_FWD_TR 0
-#define MOTOR_FWD_BL 1
-#define MOTOR_FWD_BR 1
+#define MOTOR_FWD_T 0
+#define MOTOR_FWD_B 1
+
+//binary wheel codes
+#define MOTOR_WHEEL_TL 1
+#define MOTOR_WHEEL_TR 2
+#define MOTOR_WHEEL_BL 4
+#define MOTOR_WHEEL_BR 8
 
 //here go all EEPROM memory addresses
 #define MEMADDR_LASTMODE 0

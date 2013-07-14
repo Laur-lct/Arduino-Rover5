@@ -45,8 +45,8 @@ void loop() {
     strategyMethods[0][mode](); // init new strategy according to the new mode value
   }
   strategyMethods[1][mode]();
-  DBG_ONLY(Serial.print("Batt voltage="));
-  DBG_ONLY(Serial.println(analogRead(PA_BATT_VOLTAGE)));
+  //DBG_ONLY(Serial.print("Batt voltage="));
+  //DBG_ONLY(Serial.println(analogRead(PA_BATT_VOLTAGE)));
 }
 
 //sets pointers for strategies methods
@@ -96,32 +96,39 @@ void InitStatusLeds() {
   statusLED2->off();
 }
 
-//sets pinmode of all output pins and writes initial values
+//sets pinmode of all pins and writes initial values for outputs
 void InitAllOutputPins(){
   pinMode(PO_SONICSENSOR_TRIGGER, OUTPUT);
   digitalWrite(PO_SONICSENSOR_TRIGGER,LOW);
   
   pinMode(PO_IRBUMPER_SWITCH,OUTPUT);
-  digitalWrite(PO_IRBUMPER_SWITCH,LOW);
+  digitalWrite(PO_IRBUMPER_SWITCH,HIGH);
   
+  pinMode(PO_IRANALOG_SWITCH,OUTPUT);
+  digitalWrite(PO_IRANALOG_SWITCH,LOW);
   
   pinMode(PP_MOTOR_SPD_TL,OUTPUT);
-  digitalWrite(PP_MOTOR_SPD_TL,LOW);
   pinMode(PP_MOTOR_SPD_TR,OUTPUT);
-  digitalWrite(PP_MOTOR_SPD_TR,LOW);
   pinMode(PP_MOTOR_SPD_BL,OUTPUT);
-  digitalWrite(PP_MOTOR_SPD_BL,LOW);
   pinMode(PP_MOTOR_SPD_BR,OUTPUT);
+  digitalWrite(PP_MOTOR_SPD_TL,LOW);
+  digitalWrite(PP_MOTOR_SPD_TR,LOW);
+  digitalWrite(PP_MOTOR_SPD_BL,LOW);
   digitalWrite(PP_MOTOR_SPD_BR,LOW);
   
   pinMode(PO_MOTOR_DIR_TL,OUTPUT);
   pinMode(PO_MOTOR_DIR_TR,OUTPUT);
   pinMode(PO_MOTOR_DIR_BL,OUTPUT);
   pinMode(PO_MOTOR_DIR_BR,OUTPUT);
-  digitalWrite(PO_MOTOR_DIR_TL,MOTOR_FWD_TL);
-  digitalWrite(PO_MOTOR_DIR_TR,MOTOR_FWD_TR);
-  digitalWrite(PO_MOTOR_DIR_BL,MOTOR_FWD_BL);
-  digitalWrite(PO_MOTOR_DIR_BR,MOTOR_FWD_BR);
+  digitalWrite(PO_MOTOR_DIR_TL,MOTOR_FWD_T);
+  digitalWrite(PO_MOTOR_DIR_TR,MOTOR_FWD_T);
+  digitalWrite(PO_MOTOR_DIR_BL,MOTOR_FWD_B);
+  digitalWrite(PO_MOTOR_DIR_BR,MOTOR_FWD_B);
+  
+  pinMode(PI_MOTOR_ENC_TL,INPUT);
+  pinMode(PI_MOTOR_ENC_TR,INPUT);
+  pinMode(PI_MOTOR_ENC_BL,INPUT);
+  pinMode(PI_MOTOR_ENC_BR,INPUT);
 }
 
 // tries set the mode and isModeUpdated flag

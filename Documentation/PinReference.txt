@@ -32,7 +32,7 @@
 26	IR Bumper Floor
 27
 28	IR Bumper On/Off	+
-29	US & IR Analog On/Off	+
+29	IR Analog On/Off	+
 30	Ultrasonic Trigger/Signal	+
 31
 32	Head Pan Servo	+
