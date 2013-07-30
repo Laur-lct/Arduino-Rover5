@@ -75,7 +75,7 @@ void MoveWheels(byte wheels, byte moveSpeed, boolean directionFwd=1) {
     currentPowerBL = moveSpeed;
     isFwdBL = directionFwd;
     digitalWrite(PO_MOTOR_DIR_BL,directionFwd);
-    analogWrite(PP_MOTOR_SPD_TL,moveSpeed);
+    analogWrite(PP_MOTOR_SPD_BL,moveSpeed);
   }
   if (wheels & MOTOR_WHEEL_BR) {
     currentPowerBR = moveSpeed;
@@ -91,13 +91,13 @@ void MoveWheels(byte wheels, byte moveSpeed, boolean directionFwd=1) {
 }
 
 void TurnLeft(byte moveSpeed) {
-  MoveWheels(MOTOR_WHEEL_TL | MOTOR_WHEEL_BL, moveSpeed, true);
-  MoveWheels(MOTOR_WHEEL_TR | MOTOR_WHEEL_BR, moveSpeed, false);
+  MoveWheels(MOTOR_WHEEL_TL | MOTOR_WHEEL_BL, moveSpeed, false);
+  MoveWheels(MOTOR_WHEEL_TR | MOTOR_WHEEL_BR, moveSpeed, true);
 }
 
 void TurnRight(int moveSpeed) {
-  MoveWheels(MOTOR_WHEEL_TL | MOTOR_WHEEL_BL, moveSpeed, false);
-  MoveWheels(MOTOR_WHEEL_TR | MOTOR_WHEEL_BR, moveSpeed, true);
+  MoveWheels(MOTOR_WHEEL_TL | MOTOR_WHEEL_BL, moveSpeed, true);
+  MoveWheels(MOTOR_WHEEL_TR | MOTOR_WHEEL_BR, moveSpeed, false);
 }
 
 void MovingTurnLeft (byte turnIntencity) {
