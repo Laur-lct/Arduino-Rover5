@@ -40,11 +40,11 @@ void RunStrategyLightSeeker() {
   
   if (cntrL > 20){
     cntrL--;
-    TurnLeft(90);
+    TurnLeft(50);
   }
   else if (cntrR > 20){
     cntrR--;
-    TurnRight(90);
+    TurnRight(50);
   }
   else {
     StopMoving();

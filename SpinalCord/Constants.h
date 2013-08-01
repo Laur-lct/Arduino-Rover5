@@ -12,6 +12,7 @@
 #define MODES_MAX 2 //currently 2 modes for two different strategies
 #define MODES_MIN_BROWSABLE 0 //minimum mode index, that could be set via mode button. 
 #define MODE_BLINKER 0 // genius strategy of blinking with status led 2 
+#define MODE_BLINKER 1 // robot will try to turn to strongest light source 
 
 //indicates correct forward direction flag for each side.
 #define MOTOR_FWD_T 0

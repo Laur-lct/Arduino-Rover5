@@ -53,17 +53,17 @@ void loop() {
 void InitStrategyMethods() {
   //start methods
   strategyMethods[0][0] = StartStrategyBlinker;
-  strategyMethods[0][1] = StartStrategyLightSeeker;
+  strategyMethods[0][1] = StartStrategyTest;//StartStrategyLightSeeker;
   //strategyMethods[0][2] = Dummy;
   
   //run methods
   strategyMethods[1][0] = RunStrategyBlinker;
-  strategyMethods[1][1] = RunStrategyLightSeeker;
+  strategyMethods[1][1] = RunStrategyTest;//RunStrategyLightSeeker;
   //strategyMethods[1][2] = Dummy;
   
   //finish methods
   strategyMethods[2][0] = FinishStrategyBlinker;
-  strategyMethods[2][1] = FinishStrategyLightSeeker;
+  strategyMethods[2][1] = FinishStrategyTest;//FinishStrategyLightSeeker;
   //strategyMethods[2][2] = Dummy;
 }
 
