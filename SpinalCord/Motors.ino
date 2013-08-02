@@ -1,13 +1,14 @@
 #include <TimerOne.h>
 
-boolean isMoving = 0;
-boolean calibrationEnabled=true;
+boolean isMoving = false;
+boolean isCalibrationEnabled=true;
+boolean speedWasAbove10 = false;
 unsigned int timerTickCntr=0;
 // all array indexes in clockwise order: TL, TR, BR, BL
 byte desiredPowerPercent[4] = {0,0,0,0};
 byte desiredPowerAbs[4] = {0,0,0,0};
 byte realPowerAbs[4] = {0,0,0,0};
-byte isDirectionForward[4] = {0,0,0,0};
+boolean isDirectionForward[4] = {0,0,0,0};
 byte encoderPrevState[4] = {0,0,0,0};
 
 unsigned int currentSpeedAbs[4] = {0,0,0,0};
@@ -17,7 +18,6 @@ unsigned long totalEncoderValue[4] = {0,0,0,0};
 unsigned int calibrationEncoderValue[4] = {0,0,0,0};
 
 void InitEncoders(){
-  // set a timer of length 1000 microseconds (or 0.001 sec - or 1 kHz)
   currentSpeedAbs[0] =0;
   currentSpeedAbs[1] =0;
   currentSpeedAbs[2] =0;
@@ -27,7 +27,7 @@ void InitEncoders(){
   calibrationEncoderValue[2] =0;
   calibrationEncoderValue[3] =0;
   timerTickCntr=0;
-  Timer1.initialize(1000);
+  Timer1.initialize(MOTOR_TIMER_INTERVAL);
   Timer1.attachInterrupt(TimerInterruptHandler); // attach the service routine here
 }
 
@@ -60,7 +60,7 @@ void TimerInterruptHandler() {
     calibrationEncoderValue[3]++;
   }
   
-    if (timerTickCntr==200) {
+    if (timerTickCntr >= MOTOR_CALIBRATION_TICK) {
       timerTickCntr=0;
       currentSpeedAbs[0] = calibrationEncoderValue[0];
       currentSpeedAbs[1] = calibrationEncoderValue[1];
@@ -72,7 +72,8 @@ void TimerInterruptHandler() {
       calibrationEncoderValue[2] = 0;
       calibrationEncoderValue[3] = 0;
       
-      if (calibrationEnabled && currentSpeedAbs[0]>10 && currentSpeedAbs[1]>10 && currentSpeedAbs[2]>10 && currentSpeedAbs[3]>10)
+      speedWasAbove10 = currentSpeedAbs[0]>10 && currentSpeedAbs[1]>10 && currentSpeedAbs[2]>10 && currentSpeedAbs[3]>10;
+      if (isCalibrationEnabled && speedWasAbove10)
         CalibrateMotors();
     }
     else 
@@ -80,44 +81,55 @@ void TimerInterruptHandler() {
 }
 
 void MoveWheels(byte wheels, byte powerInPercent, boolean directionFwd=1) {
-  DeactivateEncoders();
+  if (isMoving ){
+    DeactivateEncoders();
+    if (isCalibrationEnabled && speedWasAbove10)
+      SaveRealToCache();
+  }
   //map percent to absolute byte value
-  if (powerInPercent>100)
+  if (powerInPercent>100) 
     powerInPercent=100;
-  byte absPower;
-  if(powerInPercent>0)  //TODO:get from cache here;
-    absPower = map(powerInPercent, 1, 100, 0, 255);
-  else 
-    absPower = 0;   
+  byte absPower = powerInPercent > 0 ? map(powerInPercent, 1, 100, 0, 255) : 0;
+  // preset arrays 
   if (wheels & MOTOR_WHEEL_TL) {
     desiredPowerPercent[0] = powerInPercent;
     desiredPowerAbs[0]=absPower;
     isDirectionForward[0] = directionFwd;
-    realPowerAbs[0] = absPower;
-    digitalWrite(PO_MOTOR_DIR_TL,!directionFwd);
-    analogWrite(PP_MOTOR_SPD_TL,realPowerAbs[0]);
   }
   if (wheels & MOTOR_WHEEL_TR) {
     desiredPowerPercent[1] = powerInPercent;
     desiredPowerAbs[1]=absPower;
     isDirectionForward[1] = directionFwd;
-    realPowerAbs[1] = absPower;
-    digitalWrite(PO_MOTOR_DIR_TR,!directionFwd);
-    analogWrite(PP_MOTOR_SPD_TR,realPowerAbs[1]);
   }
   if (wheels & MOTOR_WHEEL_BR) {
     desiredPowerPercent[2] = powerInPercent;
     desiredPowerAbs[2]=absPower;
     isDirectionForward[2] = directionFwd;
-    realPowerAbs[2] = absPower;
-    digitalWrite(PO_MOTOR_DIR_BR,directionFwd);
-    analogWrite(PP_MOTOR_SPD_BR,realPowerAbs[2]);
   }
   if (wheels & MOTOR_WHEEL_BL) {
     desiredPowerPercent[3] = powerInPercent;
     desiredPowerAbs[3]=absPower;
     isDirectionForward[3] = directionFwd;
-    realPowerAbs[3] = absPower;
+  }
+  
+  //set the vals
+  if (wheels & MOTOR_WHEEL_TL) {
+    realPowerAbs[0] = isCalibrationEnabled ? MapRealFromCache(0) : desiredPowerAbs[0];
+    digitalWrite(PO_MOTOR_DIR_TL,!directionFwd);
+    analogWrite(PP_MOTOR_SPD_TL,realPowerAbs[0]);
+  }
+  if (wheels & MOTOR_WHEEL_TR) {
+    realPowerAbs[1] = isCalibrationEnabled ? MapRealFromCache(1) : desiredPowerAbs[1];
+    digitalWrite(PO_MOTOR_DIR_TR,!directionFwd);
+    analogWrite(PP_MOTOR_SPD_TR,realPowerAbs[1]);
+  }
+  if (wheels & MOTOR_WHEEL_BR) {
+    realPowerAbs[2] = isCalibrationEnabled ? MapRealFromCache(2) : desiredPowerAbs[2];
+    digitalWrite(PO_MOTOR_DIR_BR,directionFwd);
+    analogWrite(PP_MOTOR_SPD_BR,realPowerAbs[2]);
+  }  
+  if (wheels & MOTOR_WHEEL_BL) {
+    realPowerAbs[3] = isCalibrationEnabled ? MapRealFromCache(3) : desiredPowerAbs[3];
     digitalWrite(PO_MOTOR_DIR_BL,directionFwd);
     analogWrite(PP_MOTOR_SPD_BL,realPowerAbs[3]);
   }
@@ -160,17 +172,18 @@ void StopMoving() {
 void CalibrateMotors(){
   //prevent timer to trigger interrupt again while calibrating
   Timer1.detachInterrupt();
+  //DBG_ONLY(Serial.println("Calibrating..."));
   boolean changed=false;
   
   //sides
-  changed |= SynchMotorPair(0, 3); // TL and BL
-  changed |= SynchMotorPair(1, 2); // TR and BR
+  changed |= SyncMotorPair(0, 3); // TL and BL
+  changed |= SyncMotorPair(1, 2); // TR and BR
   //shafts
-  changed |= SynchMotorPair(0, 1); // TL and TR
-  changed |= SynchMotorPair(2, 3); // BR and BL
+  changed |= SyncMotorPair(0, 1); // TL and TR
+  changed |= SyncMotorPair(2, 3); // BR and BL
   //diagonals
-  changed |= SynchMotorPair(0, 2); // TL and BR
-  changed |= SynchMotorPair(1, 3); // TR and BL
+  changed |= SyncMotorPair(0, 2); // TL and BR
+  changed |= SyncMotorPair(1, 3); // TR and BL
   
   if (!changed){
     float avgReal = (float)(realPowerAbs[0] + realPowerAbs[1] + realPowerAbs[2] + realPowerAbs[3]) / 4;
@@ -198,7 +211,7 @@ void CalibrateMotors(){
   Timer1.attachInterrupt(TimerInterruptHandler);
 }
 
-boolean SynchMotorPair(byte motorIndex1, byte motorIndex2){
+boolean SyncMotorPair(byte motorIndex1, byte motorIndex2){
   if (realPowerAbs[motorIndex1] == 0 || realPowerAbs[motorIndex2] == 0)
     return false;
   if (currentSpeedAbs[motorIndex2] == 0)
@@ -228,5 +241,90 @@ boolean SynchMotorPair(byte motorIndex1, byte motorIndex2){
     return true;
   }
   return false;
+}
+
+void DropCalibrationCache() {
+  for (int i = MEMADDR_MOTORCACHE_START; i < MEMADDR_MOTORCACHE_END; i++) 
+    EEPROM.write(i,0);
+}
+
+#if defined(DEBUG)
+void PrintAllCache(){
+  for (int i = 0; i<160; i++){
+    if (i%8==0) {
+      Serial.println();
+      Serial.print("Iter ");
+      Serial.print(i/8);
+      Serial.print("\tVals:\t");
+    }
+    Serial.print(EEPROM.read(MEMADDR_MOTORCACHE_START+i));
+    Serial.print("\t");
+  }
+  Serial.println();
+}
+#endif
+
+void SaveRealToCache() {
+  int memOffset;
+  
+  //DBG_ONLY(Serial.println("Saving to cache"));
+  for (byte i=0; i < 4; i++){
+    memOffset = GetCacheOffset(i);
+    if (memOffset!=-1) {
+      EEPROM.write(MEMADDR_MOTORCACHE_START + memOffset,realPowerAbs[i]);
+      EEPROM.write(MEMADDR_MOTORCACHE_START + memOffset + 1, desiredPowerAbs[i]);
+    }
+  }
+}
+
+//tries to get cached real motor value. If not available, returns desirePowerdAbs for that motor.
+byte MapRealFromCache (byte motorIndex) {
+  if (desiredPowerAbs[motorIndex]==0)
+    return 0;
+
+  //DBG_ONLY(Serial.println("Reading from cache"));
+  int memOffset = GetCacheOffset(motorIndex);
+  if (memOffset < 0)
+    return desiredPowerAbs[motorIndex];
+    
+  byte val = EEPROM.read(MEMADDR_MOTORCACHE_START + memOffset);
+  //cache not set
+  if (val==0)
+    return desiredPowerAbs[motorIndex];
+  return (byte)(((float)val/EEPROM.read(MEMADDR_MOTORCACHE_START + memOffset + 1)) * desiredPowerAbs[motorIndex] +0.5f);
+}
+
+// gets cached data relative memory offset. Negative number if offset not possible.
+int GetCacheOffset(byte motorIndex) {
+    // cache data formatted as 4-dim array: [dirVariant][desiredAbsGroup][motorIndex][valType]:
+    // [dirVariant] from 0 to 3 , where 0 - all motors forward; 1 - all backward; 2 - left backward and right forward; 3 - left forward and right backward
+    // [desiredPercentGroup] - from 0 to 4, where 0 - desiredPowerPercent between 1 and 20; 1 - between 21 and 40; 2 - between 41 and 60; 2 - between 61 and 80; 4 - between 81 and 100;
+    // [motorIndex] - from 0 to 3. Simply motor index in array
+    // [valType] - 0 to 1 : 0 - realAbsValue after calibration; 1 - absDesiredValue;
+  int memOffset = motorIndex * 2;
+  // all fwd
+  if (isDirectionForward[0] == true && isDirectionForward[1] == true && isDirectionForward[2] == true && isDirectionForward[3] == true)
+    memOffset+=0*5*4*2;
+  //all back
+  else if (isDirectionForward[0] == false && isDirectionForward[1] == false && isDirectionForward[2] == false && isDirectionForward[3] == false)
+    memOffset+=1*5*4*2;
+  // left backw, right fwd
+  else if (((motorIndex==0 || motorIndex==3) && isDirectionForward[motorIndex] == false && isDirectionForward[ motorIndex==0 ? 1 : 2] == true)
+           || ((motorIndex==1 || motorIndex==2) && isDirectionForward[motorIndex] == true &&  isDirectionForward[ motorIndex==1 ? 0 : 3] == false))
+    memOffset+=2*5*4*2;
+  // left fwd, right backw
+  else if (((motorIndex==0 || motorIndex==3) && isDirectionForward[motorIndex] == true &&  isDirectionForward[ motorIndex==0 ? 1 : 2] == false)
+           || ((motorIndex==1 || motorIndex==2) && isDirectionForward[motorIndex] == false &&  isDirectionForward[ motorIndex==1 ? 0 : 3] == true))
+    memOffset+=3*5*4*2;  
+  else 
+    return -1;
+  // add [desiredPercentGroup] offset
+  memOffset += (int)((float)(desiredPowerPercent[motorIndex]-11)/20 + 0.5) * 4 * 2;
+
+  //DBG_ONLY(Serial.print("Offset = \t"));
+  //DBG_ONLY(Serial.print(memOffset));
+  //DBG_ONLY(Serial.print("\tmotorIdx =\t"));
+  //DBG_ONLY(Serial.println(motorIndex));
+  return memOffset;
 }
 

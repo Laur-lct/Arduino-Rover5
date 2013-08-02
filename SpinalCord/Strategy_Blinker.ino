@@ -4,8 +4,13 @@ int blinkerDelay=200;
 void StartStrategyBlinker() {
   //set do all preparations here
   DBG_ONLY(Serial.println("Strat blinker Start"));
+  
+  DBG_ONLY(Serial.print("freeMemory()="));
+  DBG_ONLY(Serial.println(freeMemory()));
+
   DBG_ONLY(delay(1000));
   blinkerDelay=200;
+  PrintAllCache();
 }
 
 void RunStrategyBlinker() {

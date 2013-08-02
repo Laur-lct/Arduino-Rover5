@@ -3,6 +3,7 @@
 #include "Constants.h"
 #include <LED.h>
 #include <EEPROM.h>
+#include <MemoryFree.h> //for debug purposes. Read More http://playground.arduino.cc/Code/AvailableMemory
 
 typedef void (*functionPtr)();
 
