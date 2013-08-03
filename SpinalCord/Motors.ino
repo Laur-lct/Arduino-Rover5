@@ -1,5 +1,3 @@
-#include <TimerOne.h>
-
 boolean isMoving = false;
 boolean isCalibrationEnabled=true;
 boolean speedWasAbove10 = false;
@@ -35,7 +33,6 @@ void InitEncoders(){
 void DeactivateEncoders(){
   Timer1.detachInterrupt();
   Timer1.stop();
-  //TODO:save calibrated vals to cache here
 }
 
 void TimerInterruptHandler() {

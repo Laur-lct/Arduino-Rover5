@@ -3,7 +3,9 @@
 #include "Constants.h"
 #include <LED.h>
 #include <EEPROM.h>
+#include <TimerOne.h>
 #include <MemoryFree.h> //for debug purposes. Read More http://playground.arduino.cc/Code/AvailableMemory
+#include <Servo.h>
 
 typedef void (*functionPtr)();
 
@@ -33,6 +35,8 @@ void setup() {
   
   InitModeAndModeButton();
   InitStrategyMethods();
+  CenterHead();
+  delay(200);
   //setup finished
   statusLED1->off();
 }
@@ -130,6 +134,7 @@ void InitAllOutputPins(){
   pinMode(PI_MOTOR_ENC_TR,INPUT);
   pinMode(PI_MOTOR_ENC_BL,INPUT);
   pinMode(PI_MOTOR_ENC_BR,INPUT);
+  
 }
 
 // tries set the mode and isModeUpdated flag

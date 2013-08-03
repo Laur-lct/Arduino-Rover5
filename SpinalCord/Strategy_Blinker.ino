@@ -1,16 +1,15 @@
 //this is test robot strategy to show the principle.
 
-int blinkerDelay=200;
+int blinkerDelay;
 void StartStrategyBlinker() {
-  //set do all preparations here
+  //do all preparations here
   DBG_ONLY(Serial.println("Strat blinker Start"));
-  
   DBG_ONLY(Serial.print("freeMemory()="));
   DBG_ONLY(Serial.println(freeMemory()));
-
   DBG_ONLY(delay(1000));
+  
   blinkerDelay=200;
-  PrintAllCache();
+  //SetHeadPan(-110);
 }
 
 void RunStrategyBlinker() {
@@ -20,6 +19,11 @@ void RunStrategyBlinker() {
   delay(blinkerDelay);
   statusLED2->off();
   delay(blinkerDelay);
+  SetHeadTilt(currentTilt+1);
+  DBG_ONLY(Serial.print("Head pan = "));
+  DBG_ONLY(Serial.print((int)currentPan));
+  DBG_ONLY(Serial.print("\ttilt = "));
+  DBG_ONLY(Serial.println((int)currentTilt));
 }
 
 void FinishStrategyBlinker() {

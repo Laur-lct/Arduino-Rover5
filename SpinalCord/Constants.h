@@ -14,7 +14,7 @@
 #define MODE_BLINKER 0 // genius strategy of blinking with status led 2 
 #define MODE_LIGHTSEEKER 1 // robot will try to turn to strongest light source 
 
-//indicates correct forward direction flag for each side.
+//indicates correct forward direction flag for each shaft.
 #define MOTOR_FWD_T 0
 #define MOTOR_FWD_B 1
 
@@ -24,8 +24,22 @@
 //binary wheel codes
 #define MOTOR_WHEEL_TL 1
 #define MOTOR_WHEEL_TR 2
-#define MOTOR_WHEEL_BL 4
-#define MOTOR_WHEEL_BR 8
+#define MOTOR_WHEEL_BR 4
+#define MOTOR_WHEEL_BL 8
+
+//head servo constants
+#define HEAD_PAN_CENTER 88
+#define HEAD_TILT_CENTER 110
+#define HEAD_PAN_MAX 178
+#define HEAD_PAN_MIN 0
+#define HEAD_TILT_MAX 140
+#define HEAD_TILT_MIN 15
+
+//binary bumper  IR sensor codes
+#define SENSOR_IRBUMP_TL 1
+#define SENSOR_IRBUMP_TR 2
+#define SENSOR_IRBUMP_BR 4
+#define SENSOR_IRBUMP_BL 8
 
 //here go all EEPROM memory addresses
 #define MEMADDR_LASTMODE 0

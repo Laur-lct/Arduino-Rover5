@@ -4,7 +4,7 @@
 0	USB_RX	+
 1	USB_TX	+
 2	Mode Button	+
-3
+3	Status LED 2	+
 4	Motor Control Speed Ch1	+
 5	Motor Control Speed Ch2	+
 6	Motor Control Speed Ch3	+
@@ -49,7 +49,7 @@
 43	Motor Control Encoder Ch4	+
 44
 45	LED Lights  On/Off
-46	Status LED 2	+
+46
 47	Brain Charge On/Off
 48	Laser On/Off	+
 49	Power Control Self Off	+
