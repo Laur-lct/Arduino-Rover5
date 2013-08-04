@@ -7,9 +7,8 @@ void StartStrategyBlinker() {
   DBG_ONLY(Serial.print("freeMemory()="));
   DBG_ONLY(Serial.println(freeMemory()));
   DBG_ONLY(delay(1000));
-  
+  DBG_ONLY(PrintAllCache());
   blinkerDelay=200;
-  //SetHeadPan(-110);
 }
 
 void RunStrategyBlinker() {
@@ -19,11 +18,6 @@ void RunStrategyBlinker() {
   delay(blinkerDelay);
   statusLED2->off();
   delay(blinkerDelay);
-  SetHeadTilt(currentTilt+1);
-  DBG_ONLY(Serial.print("Head pan = "));
-  DBG_ONLY(Serial.print((int)currentPan));
-  DBG_ONLY(Serial.print("\ttilt = "));
-  DBG_ONLY(Serial.println((int)currentTilt));
 }
 
 void FinishStrategyBlinker() {

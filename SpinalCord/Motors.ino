@@ -14,6 +14,7 @@ unsigned int currentSpeedAbs[4] = {0,0,0,0};
 // total encoder ticks since start moving
 unsigned long totalEncoderValue[4] = {0,0,0,0};
 unsigned int calibrationEncoderValue[4] = {0,0,0,0};
+byte lastDirectionsByte;
 
 void InitEncoders(){
   currentSpeedAbs[0] =0;
@@ -77,59 +78,55 @@ void TimerInterruptHandler() {
       timerTickCntr++;
 }
 
-void MoveWheels(byte wheels, byte powerInPercent, boolean directionFwd=1) {
+void MoveWheels(byte wheelDirections, byte powerPercentTL, byte powerPercentTR, byte powerPercentBR, byte powerPercentBL) {
+  
+  // do nothing if arguments are the same
+  if (powerPercentTL == desiredPowerPercent[0] && 
+      powerPercentTR == desiredPowerPercent[1] && 
+      powerPercentBR == desiredPowerPercent[2] && 
+      powerPercentBL == desiredPowerPercent[3] && 
+      lastDirectionsByte == wheelDirections)
+      return;
+ 
   if (isMoving ){
     DeactivateEncoders();
     if (isCalibrationEnabled && speedWasAbove10)
       SaveRealToCache();
   }
-  //map percent to absolute byte value
-  if (powerInPercent>100) 
-    powerInPercent=100;
-  byte absPower = powerInPercent > 0 ? map(powerInPercent, 1, 100, 0, 255) : 0;
+  lastDirectionsByte = wheelDirections;
   // preset arrays 
-  if (wheels & MOTOR_WHEEL_TL) {
-    desiredPowerPercent[0] = powerInPercent;
-    desiredPowerAbs[0]=absPower;
-    isDirectionForward[0] = directionFwd;
-  }
-  if (wheels & MOTOR_WHEEL_TR) {
-    desiredPowerPercent[1] = powerInPercent;
-    desiredPowerAbs[1]=absPower;
-    isDirectionForward[1] = directionFwd;
-  }
-  if (wheels & MOTOR_WHEEL_BR) {
-    desiredPowerPercent[2] = powerInPercent;
-    desiredPowerAbs[2]=absPower;
-    isDirectionForward[2] = directionFwd;
-  }
-  if (wheels & MOTOR_WHEEL_BL) {
-    desiredPowerPercent[3] = powerInPercent;
-    desiredPowerAbs[3]=absPower;
-    isDirectionForward[3] = directionFwd;
-  }
-  
-  //set the vals
-  if (wheels & MOTOR_WHEEL_TL) {
-    realPowerAbs[0] = isCalibrationEnabled ? MapRealFromCache(0) : desiredPowerAbs[0];
-    digitalWrite(PO_MOTOR_DIR_TL,!directionFwd);
-    analogWrite(PP_MOTOR_SPD_TL,realPowerAbs[0]);
-  }
-  if (wheels & MOTOR_WHEEL_TR) {
-    realPowerAbs[1] = isCalibrationEnabled ? MapRealFromCache(1) : desiredPowerAbs[1];
-    digitalWrite(PO_MOTOR_DIR_TR,!directionFwd);
-    analogWrite(PP_MOTOR_SPD_TR,realPowerAbs[1]);
-  }
-  if (wheels & MOTOR_WHEEL_BR) {
-    realPowerAbs[2] = isCalibrationEnabled ? MapRealFromCache(2) : desiredPowerAbs[2];
-    digitalWrite(PO_MOTOR_DIR_BR,directionFwd);
-    analogWrite(PP_MOTOR_SPD_BR,realPowerAbs[2]);
-  }  
-  if (wheels & MOTOR_WHEEL_BL) {
-    realPowerAbs[3] = isCalibrationEnabled ? MapRealFromCache(3) : desiredPowerAbs[3];
-    digitalWrite(PO_MOTOR_DIR_BL,directionFwd);
-    analogWrite(PP_MOTOR_SPD_BL,realPowerAbs[3]);
-  }
+  desiredPowerPercent[0] = powerPercentTL > 100 ? 100 : powerPercentTL;
+  desiredPowerAbs[0] = desiredPowerPercent[0] > 0 ? map(desiredPowerPercent[0], 1, 100, 0, 255) : 0;
+  isDirectionForward[0] = (wheelDirections & MOTOR_WHEEL_TL) > 0;
+
+  desiredPowerPercent[1] = powerPercentTR > 100 ? 100 : powerPercentTR;
+  desiredPowerAbs[1] = desiredPowerPercent[1] > 0 ? map(desiredPowerPercent[1], 1, 100, 0, 255) : 0;
+  isDirectionForward[1] = (wheelDirections & MOTOR_WHEEL_TR) > 0;
+ 
+  desiredPowerPercent[2] = powerPercentBR > 100 ? 100 : powerPercentBR;
+  desiredPowerAbs[2] = desiredPowerPercent[2] > 0 ? map(desiredPowerPercent[2], 1, 100, 0, 255) : 0;
+  isDirectionForward[2] = (wheelDirections & MOTOR_WHEEL_BR) > 0;
+
+  desiredPowerPercent[3] = powerPercentBL > 100 ? 100 : powerPercentBL;
+  desiredPowerAbs[3] = desiredPowerPercent[3] > 0 ? map(desiredPowerPercent[3], 1, 100, 0, 255) : 0;
+  isDirectionForward[3] = (wheelDirections & MOTOR_WHEEL_BL) > 0;
+ 
+    //set the vals
+  realPowerAbs[0] = isCalibrationEnabled ? MapRealFromCache(0) : desiredPowerAbs[0];
+  digitalWrite(PO_MOTOR_DIR_TL,!isDirectionForward[0]);
+  analogWrite(PP_MOTOR_SPD_TL,realPowerAbs[0]);
+
+  realPowerAbs[1] = isCalibrationEnabled ? MapRealFromCache(1) : desiredPowerAbs[1];
+  digitalWrite(PO_MOTOR_DIR_TR,!isDirectionForward[1]);
+  analogWrite(PP_MOTOR_SPD_TR,realPowerAbs[1]);
+
+  realPowerAbs[2] = isCalibrationEnabled ? MapRealFromCache(2) : desiredPowerAbs[2];
+  digitalWrite(PO_MOTOR_DIR_BR,isDirectionForward[2]);
+  analogWrite(PP_MOTOR_SPD_BR,realPowerAbs[2]);
+
+  realPowerAbs[3] = isCalibrationEnabled ? MapRealFromCache(3) : desiredPowerAbs[3];
+  digitalWrite(PO_MOTOR_DIR_BL,isDirectionForward[3]);
+  analogWrite(PP_MOTOR_SPD_BL,realPowerAbs[3]);
   
   if (desiredPowerPercent[0] > 0 || desiredPowerPercent[1] > 0 || desiredPowerPercent[2] > 0 || desiredPowerPercent[3] > 0){
     isMoving = true;
@@ -145,25 +142,23 @@ void MoveWheels(byte wheels, byte powerInPercent, boolean directionFwd=1) {
 }
 
 void TurnLeft(byte powerPercent) {
-  MoveWheels(MOTOR_WHEEL_TL | MOTOR_WHEEL_BL, powerPercent, false);
-  MoveWheels(MOTOR_WHEEL_TR | MOTOR_WHEEL_BR, powerPercent, true);
+  MoveWheels(MOTOR_WHEEL_TR | MOTOR_WHEEL_BR, powerPercent, powerPercent, powerPercent, powerPercent);
 }
 
 void TurnRight(byte powerPercent) {
-  MoveWheels(MOTOR_WHEEL_TL | MOTOR_WHEEL_BL, powerPercent, true);
-  MoveWheels(MOTOR_WHEEL_TR | MOTOR_WHEEL_BR, powerPercent, false);
+  MoveWheels(MOTOR_WHEEL_TL | MOTOR_WHEEL_BL, powerPercent, powerPercent, powerPercent, powerPercent);
 }
 
 void MoveForward(byte powerPercent) {
-  MoveWheels(MOTOR_WHEEL_TL | MOTOR_WHEEL_TR | MOTOR_WHEEL_BL | MOTOR_WHEEL_BR, powerPercent, true);
+  MoveWheels(MOTOR_WHEEL_TL | MOTOR_WHEEL_TR | MOTOR_WHEEL_BL | MOTOR_WHEEL_BR, powerPercent, powerPercent, powerPercent, powerPercent);
 }
 
 void MoveBackward(byte powerPercent) {
-  MoveWheels(MOTOR_WHEEL_TL | MOTOR_WHEEL_TR | MOTOR_WHEEL_BL | MOTOR_WHEEL_BR, powerPercent, false);
+  MoveWheels(0, powerPercent, powerPercent, powerPercent, powerPercent);
 }
   
 void StopMoving() {
-  MoveWheels(MOTOR_WHEEL_TL | MOTOR_WHEEL_TR | MOTOR_WHEEL_BL | MOTOR_WHEEL_BR, 0);
+  MoveWheels(MOTOR_WHEEL_TL | MOTOR_WHEEL_TR | MOTOR_WHEEL_BL | MOTOR_WHEEL_BR, 0,0,0,0);
 }
 
 void CalibrateMotors(){
@@ -179,8 +174,8 @@ void CalibrateMotors(){
   changed |= SyncMotorPair(0, 1); // TL and TR
   changed |= SyncMotorPair(2, 3); // BR and BL
   //diagonals
-  changed |= SyncMotorPair(0, 2); // TL and BR
-  changed |= SyncMotorPair(1, 3); // TR and BL
+  //changed |= SyncMotorPair(0, 2); // TL and BR
+  //changed |= SyncMotorPair(1, 3); // TR and BL
   
   if (!changed){
     float avgReal = (float)(realPowerAbs[0] + realPowerAbs[1] + realPowerAbs[2] + realPowerAbs[3]) / 4;

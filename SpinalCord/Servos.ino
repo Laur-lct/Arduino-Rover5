@@ -10,7 +10,7 @@ void EnableHeadServos(){
   tiltServo.attach(PO_SEVRVO_HEAD_TILT);
 }
 
-void DisaleHeadServos(){
+void DisableHeadServos(){
   panServo.detach();
   tiltServo.detach();
 }
@@ -19,13 +19,13 @@ void CenterHead(){
   SetHeadPos(0,0);
 }
 
-void SetHeadPos(char panAngle, char tiltAngle){
+void SetHeadPos(int panAngle, int tiltAngle){
   SetHeadPan(panAngle);
   SetHeadTilt(tiltAngle);
 }
 
 //angle relative to the center '-' = left '+' = right. 
-void SetHeadPan(char panAngle){
+void SetHeadPan(int panAngle){
  int realPan = HEAD_PAN_CENTER - panAngle;
  if (HEAD_PAN_CENTER - panAngle < HEAD_PAN_MIN) realPan = HEAD_PAN_MIN;
  else if (HEAD_PAN_CENTER - panAngle > HEAD_PAN_MAX) realPan = HEAD_PAN_MAX;
@@ -34,7 +34,7 @@ void SetHeadPan(char panAngle){
  currentPan = (char)(HEAD_PAN_CENTER - realPan);
 }
 //angle relative to the center '-' = up '+' = down.
-void SetHeadTilt(char tiltAngle){
+void SetHeadTilt(int tiltAngle){
  int realTilt = HEAD_TILT_CENTER + tiltAngle;
  if (realTilt > HEAD_TILT_MAX) realTilt = HEAD_TILT_MAX;
  else if (realTilt < HEAD_TILT_MIN) realTilt = HEAD_TILT_MIN;

@@ -29,7 +29,7 @@
 
 //head servo constants
 #define HEAD_PAN_CENTER 88
-#define HEAD_TILT_CENTER 110
+#define HEAD_TILT_CENTER 100
 #define HEAD_PAN_MAX 178
 #define HEAD_PAN_MIN 0
 #define HEAD_TILT_MAX 140
