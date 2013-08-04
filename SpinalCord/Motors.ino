@@ -1,6 +1,5 @@
 boolean isMoving = false;
 boolean isCalibrationEnabled=true;
-boolean speedWasAbove10 = false;
 unsigned int timerTickCntr=0;
 // all array indexes in clockwise order: TL, TR, BR, BL
 byte desiredPowerPercent[4] = {0,0,0,0};
@@ -70,8 +69,7 @@ void TimerInterruptHandler() {
       calibrationEncoderValue[2] = 0;
       calibrationEncoderValue[3] = 0;
       
-      speedWasAbove10 = currentSpeedAbs[0]>10 && currentSpeedAbs[1]>10 && currentSpeedAbs[2]>10 && currentSpeedAbs[3]>10;
-      if (isCalibrationEnabled && speedWasAbove10)
+      if (isCalibrationEnabled)
         CalibrateMotors();
     }
     else 
@@ -79,7 +77,6 @@ void TimerInterruptHandler() {
 }
 
 void MoveWheels(byte wheelDirections, byte powerPercentTL, byte powerPercentTR, byte powerPercentBR, byte powerPercentBL) {
-  
   // do nothing if arguments are the same
   if (powerPercentTL == desiredPowerPercent[0] && 
       powerPercentTR == desiredPowerPercent[1] && 
@@ -90,7 +87,7 @@ void MoveWheels(byte wheelDirections, byte powerPercentTL, byte powerPercentTR, 
  
   if (isMoving ){
     DeactivateEncoders();
-    if (isCalibrationEnabled && speedWasAbove10)
+    if (isCalibrationEnabled)
       SaveRealToCache();
   }
   lastDirectionsByte = wheelDirections;
@@ -168,7 +165,7 @@ void CalibrateMotors(){
   boolean changed=false;
   
   //sides
-  changed |= SyncMotorPair(0, 3); // TL and BL
+  changed |= SyncMotorPair(3, 0); // TL and BL
   changed |= SyncMotorPair(1, 2); // TR and BR
   //shafts
   changed |= SyncMotorPair(0, 1); // TL and TR
@@ -206,8 +203,14 @@ void CalibrateMotors(){
 boolean SyncMotorPair(byte motorIndex1, byte motorIndex2){
   if (realPowerAbs[motorIndex1] == 0 || realPowerAbs[motorIndex2] == 0)
     return false;
-  if (currentSpeedAbs[motorIndex2] == 0)
-    currentSpeedAbs[motorIndex2] = 1;
+  if (currentSpeedAbs[motorIndex2] == 0){
+    realPowerAbs[motorIndex2]++;
+    return true;
+  }
+  if (currentSpeedAbs[motorIndex1] == 0){
+    realPowerAbs[motorIndex1]++;
+    return true;
+  }
   float ratioDiff = ((float)currentSpeedAbs[motorIndex1] / currentSpeedAbs[motorIndex2]) - ((float)desiredPowerAbs[motorIndex1] / desiredPowerAbs[motorIndex2]);
   char absDiff1 = realPowerAbs[motorIndex1] - desiredPowerAbs[motorIndex1];
   char absDiff2 = realPowerAbs[motorIndex2] - desiredPowerAbs[motorIndex2];
