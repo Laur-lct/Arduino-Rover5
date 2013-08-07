@@ -7,7 +7,7 @@ void StartStrategyBlinker() {
   DBG_ONLY(Serial.print("freeMemory()="));
   DBG_ONLY(Serial.println(freeMemory()));
   DBG_ONLY(delay(1000));
-  DBG_ONLY(PrintAllCache());
+  //DBG_ONLY(PrintAllCache());
   blinkerDelay=200;
 }
 

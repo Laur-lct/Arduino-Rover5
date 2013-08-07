@@ -18,7 +18,7 @@ int USonicFireAccurate(){
     delay(15);
     raws[2] = USonicDoRawMeasure();
     
-    if (raws[0] > 90 && raws[0]-raws[1] > - maxDiff && raws[0]-raws[1] < maxDiff && raws[0]-raws[2] > - maxDiff && raws[0]-raws[2] < maxDiff)
+    if (raws[0] > 60 && raws[0]-raws[1] > -maxDiff && raws[0]-raws[1] < maxDiff && raws[0]-raws[2] > -maxDiff && raws[0]-raws[2] < maxDiff)
       return microsecondsToCentimeters((raws[0] + raws[1] + raws[2])/3);
     delay(20);
     maxTries--;

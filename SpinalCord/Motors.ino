@@ -174,21 +174,20 @@ void CalibrateMotors(){
   //changed |= SyncMotorPair(0, 2); // TL and BR
   //changed |= SyncMotorPair(1, 3); // TR and BL
   
-  if (!changed){
-    float avgReal = (float)(realPowerAbs[0] + realPowerAbs[1] + realPowerAbs[2] + realPowerAbs[3]) / 4;
-    float avgDesired = (float)(desiredPowerAbs[0] + desiredPowerAbs[1] + desiredPowerAbs[2] + desiredPowerAbs[3]) / 4;
-    if (avgReal-avgDesired>=1){
-      realPowerAbs[0]--;
-      realPowerAbs[1]--;
-      realPowerAbs[2]--;
-      realPowerAbs[3]--;
-    }
-    else if (avgReal - avgDesired <= -1 && realPowerAbs[0]<255 && realPowerAbs[1]<255 && realPowerAbs[2]<255 && realPowerAbs[3]<255 ){
-      realPowerAbs[0]++;
-      realPowerAbs[1]++;
-      realPowerAbs[2]++;
-      realPowerAbs[3]++;
-    }                 
+  if (realPowerAbs[0]<desiredPowerAbs[0] && realPowerAbs[1]<desiredPowerAbs[1] && realPowerAbs[2]<desiredPowerAbs[2] && realPowerAbs[3]<desiredPowerAbs[3]){
+    realPowerAbs[0]++;
+    realPowerAbs[1]++;
+    realPowerAbs[2]++;
+    realPowerAbs[3]++;
+  }
+  else if (desiredPowerAbs[0] < 251 && realPowerAbs[0] > desiredPowerAbs[0] + 5 && 
+           desiredPowerAbs[1] < 251 && realPowerAbs[1] > desiredPowerAbs[1] + 5 && 
+           desiredPowerAbs[2] < 251 && realPowerAbs[2] > desiredPowerAbs[2] + 5 && 
+           desiredPowerAbs[3] < 251 && realPowerAbs[3] > desiredPowerAbs[3] + ) {
+    realPowerAbs[0]--;
+    realPowerAbs[1]--;
+    realPowerAbs[2]--;
+    realPowerAbs[3]--;                 
   }
   //set the new power values
   analogWrite(PP_MOTOR_SPD_TL,realPowerAbs[0]);
@@ -203,11 +202,11 @@ void CalibrateMotors(){
 boolean SyncMotorPair(byte motorIndex1, byte motorIndex2){
   if (realPowerAbs[motorIndex1] == 0 || realPowerAbs[motorIndex2] == 0)
     return false;
-  if (currentSpeedAbs[motorIndex2] == 0){
+  if (currentSpeedAbs[motorIndex2] < 3){
     realPowerAbs[motorIndex2]++;
     return true;
   }
-  if (currentSpeedAbs[motorIndex1] == 0){
+  if (currentSpeedAbs[motorIndex1] < 3){
     realPowerAbs[motorIndex1]++;
     return true;
   }
