@@ -183,7 +183,7 @@ void CalibrateMotors(){
   else if (desiredPowerAbs[0] < 251 && realPowerAbs[0] > desiredPowerAbs[0] + 5 && 
            desiredPowerAbs[1] < 251 && realPowerAbs[1] > desiredPowerAbs[1] + 5 && 
            desiredPowerAbs[2] < 251 && realPowerAbs[2] > desiredPowerAbs[2] + 5 && 
-           desiredPowerAbs[3] < 251 && realPowerAbs[3] > desiredPowerAbs[3] + ) {
+           desiredPowerAbs[3] < 251 && realPowerAbs[3] > desiredPowerAbs[3] + 5) {
     realPowerAbs[0]--;
     realPowerAbs[1]--;
     realPowerAbs[2]--;
