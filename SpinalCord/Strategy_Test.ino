@@ -11,7 +11,7 @@ void StartStrategyTest() {
   //DBG_ONLY(Serial.print("Calibration enabled:\t"));
   //DBG_ONLY(Serial.println(isCalibrationEnabled));
   cntr=0;
-  SetHeadPos(35,5);
+  //SetHeadPos(35,0);
   delay(200);
   cmLeft=100;
   cmRight=100;
@@ -19,36 +19,30 @@ void StartStrategyTest() {
 }
 
 void RunStrategyTest() {
-  
-  if (currentPan<0)
-    cmLeft = USonicFireAccurate();
-  else 
-    cmRight = USonicFireAccurate();
-    
-  SetHeadPan(-currentPan);
-  delay(300);
-  DisableHeadServos();
-  if (currentPan<0)
-    cmLeft = USonicFireAccurate();
-  else 
-    cmRight = USonicFireAccurate();
-
-  // turn if obstacle
-  if (cmLeft < 40 || cmRight < 40){
-    if (cmRight < cmLeft)
-      TurnLeft(30);
-    else 
-      TurnRight(30);
-  }
-  else 
-    MoveForward(30);
-  DBG_ONLY(Serial.print("dist:\t"));
-  DBG_ONLY(Serial.print(cmLeft));
-  DBG_ONLY(Serial.print('\t'));
-  DBG_ONLY(Serial.println(cmRight));
-  delay(1000);
-  StopMoving();
-
+  MoveForward(30,20);
+  while(isMoving)
+    delay(100);
+  TurnLeft(30,90);
+  while(isMoving)
+    delay(100);
+  MoveForward(30,20);
+    while(isMoving)
+    delay(100);
+  TurnLeft(30,90);
+  while(isMoving)
+    delay(100);
+  MoveForward(30,20);
+  while(isMoving)
+    delay(100);
+  TurnLeft(30,90);
+  while(isMoving)
+    delay(100);
+  MoveForward(30,20);
+    while(isMoving)
+    delay(100);
+  TurnLeft(30,90);
+  while(isMoving)
+    delay(100);
   //if (cmLeft - cm Right > )
   /*
   DBG_ONLY(Serial.print("Speed:\t"));
@@ -69,10 +63,7 @@ void RunStrategyTest() {
   DBG_ONLY(Serial.print('\t'));
   DBG_ONLY(Serial.println(realPowerAbs[3]));*/
   
-  if (cntr<60)
-    cntr++;
-  else   
-    SetMode(0);
+  SetMode(0);
 }
 
 void FinishStrategyTest() {

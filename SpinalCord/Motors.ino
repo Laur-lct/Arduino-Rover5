@@ -14,12 +14,14 @@ unsigned int currentSpeedAbs[4] = {0,0,0,0};
 unsigned long totalEncoderValue[4] = {0,0,0,0};
 unsigned int calibrationEncoderValue[4] = {0,0,0,0};
 byte lastDirectionsByte;
-
+unsigned long stopAtEncoderValue=0;
+int stopAtAngle = 1000; 
 void InitEncoders(){
-  currentSpeedAbs[0] =0;
-  currentSpeedAbs[1] =0;
-  currentSpeedAbs[2] =0;
-  currentSpeedAbs[3] =0;
+  totalEncoderValue[0] =0;
+  totalEncoderValue[1] =0;
+  totalEncoderValue[2] =0;
+  totalEncoderValue[3] =0;
+  stopAtEncoderValue=0;
   calibrationEncoderValue[0] =0;
   calibrationEncoderValue[1] =0;
   calibrationEncoderValue[2] =0;
@@ -57,23 +59,28 @@ void TimerInterruptHandler() {
     calibrationEncoderValue[3]++;
   }
   
-    if (timerTickCntr >= MOTOR_CALIBRATION_TICK) {
-      timerTickCntr=0;
-      currentSpeedAbs[0] = calibrationEncoderValue[0];
-      currentSpeedAbs[1] = calibrationEncoderValue[1];
-      currentSpeedAbs[2] = calibrationEncoderValue[2];
-      currentSpeedAbs[3] = calibrationEncoderValue[3];
+  if (timerTickCntr >= MOTOR_CALIBRATION_TICK) {
+    timerTickCntr=0;
+    currentSpeedAbs[0] = calibrationEncoderValue[0];
+    currentSpeedAbs[1] = calibrationEncoderValue[1];
+    currentSpeedAbs[2] = calibrationEncoderValue[2];
+    currentSpeedAbs[3] = calibrationEncoderValue[3];
       
-      calibrationEncoderValue[0] = 0;
-      calibrationEncoderValue[1] = 0;
-      calibrationEncoderValue[2] = 0;
-      calibrationEncoderValue[3] = 0;
-      
-      if (isCalibrationEnabled)
-        CalibrateMotors();
-    }
-    else 
-      timerTickCntr++;
+    calibrationEncoderValue[0] = 0;
+    calibrationEncoderValue[1] = 0;
+    calibrationEncoderValue[2] = 0;
+    calibrationEncoderValue[3] = 0;
+    
+    if (isCalibrationEnabled)
+      CalibrateMotors();
+  }
+  else 
+    timerTickCntr++;
+  if (stopAtEncoderValue>0 && totalEncoderValue[0]+totalEncoderValue[1]+totalEncoderValue[2]+totalEncoderValue[3] >= stopAtEncoderValue*4){
+    StopMoving();
+  }
+  //else if (stopAtAngle!=1000){
+  //}
 }
 
 void MoveWheels(byte wheelDirections, byte powerPercentTL, byte powerPercentTR, byte powerPercentBR, byte powerPercentBL) {
@@ -138,20 +145,28 @@ void MoveWheels(byte wheelDirections, byte powerPercentTL, byte powerPercentTR, 
   }
 }
 
-void TurnLeft(byte powerPercent) {
+void TurnLeft(byte powerPercent, unsigned int deltaDegrees=0) {
   MoveWheels(MOTOR_WHEEL_TR | MOTOR_WHEEL_BR, powerPercent, powerPercent, powerPercent, powerPercent);
+  if (deltaDegrees)
+    stopAtEncoderValue = (unsigned long)(5.35f * deltaDegrees); //ideally 3.8353  encoder ticks per degree
 }
 
-void TurnRight(byte powerPercent) {
+void TurnRight(byte powerPercent, unsigned int deltaDegrees=0) {
   MoveWheels(MOTOR_WHEEL_TL | MOTOR_WHEEL_BL, powerPercent, powerPercent, powerPercent, powerPercent);
+  if (deltaDegrees)
+    stopAtEncoderValue = (unsigned long)(5.35f * deltaDegrees); //ideally 3.8353 encoder ticks per degree
 }
 
-void MoveForward(byte powerPercent) {
+void MoveForward(byte powerPercent, unsigned int distanceCm=0) {
   MoveWheels(MOTOR_WHEEL_TL | MOTOR_WHEEL_TR | MOTOR_WHEEL_BL | MOTOR_WHEEL_BR, powerPercent, powerPercent, powerPercent, powerPercent);
+  if (distanceCm)
+    stopAtEncoderValue = (unsigned long)(16.32f * (distanceCm - (distanceCm > 4 ? (powerPercent/50 +1) :0))); // encoder ticks per CM
 }
 
-void MoveBackward(byte powerPercent) {
+void MoveBackward(byte powerPercent, unsigned int distanceCm=0) {
   MoveWheels(0, powerPercent, powerPercent, powerPercent, powerPercent);
+  if (distanceCm)
+    stopAtEncoderValue = (unsigned long)(16.32f * (distanceCm - (distanceCm > 4 ? (powerPercent/50 +1) :0))); // encoder ticks per CM , - inertia compensation
 }
   
 void StopMoving() {
@@ -237,13 +252,13 @@ boolean SyncMotorPair(byte motorIndex1, byte motorIndex2){
   return false;
 }
 
-void DropCalibrationCache() {
+void DropMotorCache() {
   for (int i = MEMADDR_MOTORCACHE_START; i < MEMADDR_MOTORCACHE_END; i++) 
     EEPROM.write(i,0);
 }
 
 #if defined(DEBUG)
-void PrintAllCache(){
+void PrintMotorCache(){
   for (int i = 0; i<160; i++){
     if (i%8==0) {
       Serial.println();

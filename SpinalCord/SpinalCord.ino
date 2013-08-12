@@ -37,6 +37,7 @@ void setup() {
   
   InitModeAndModeButton();
   InitStrategyMethods();
+  InitIRSensor();
   CenterHead();
   delay(200);
   //setup finished
