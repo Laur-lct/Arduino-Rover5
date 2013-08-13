@@ -8,6 +8,8 @@
   #include <MemoryFree.h> //for debug purposes. Read More http://playground.arduino.cc/Code/AvailableMemory
 #endif
 #include <Servo.h>
+#include <DigitalWriteFast.h>
+
 
 typedef void (*functionPtr)();
 

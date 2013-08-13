@@ -1,6 +1,6 @@
 boolean isMoving = false;
 boolean isCalibrationEnabled=true;
-unsigned int timerTickCntr=0;
+int timerTickCntr=0;
 // all array indexes in clockwise order: TL, TR, BR, BL
 byte desiredPowerPercent[4] = {0,0,0,0};
 byte desiredPowerAbs[4] = {0,0,0,0};
@@ -26,7 +26,7 @@ void InitEncoders(){
   calibrationEncoderValue[1] =0;
   calibrationEncoderValue[2] =0;
   calibrationEncoderValue[3] =0;
-  timerTickCntr=0;
+  timerTickCntr=-200;
   Timer1.initialize(MOTOR_TIMER_INTERVAL);
   Timer1.attachInterrupt(TimerInterruptHandler); // attach the service routine here
 }
@@ -38,22 +38,22 @@ void DeactivateEncoders(){
 }
 
 void TimerInterruptHandler() {
-  if (encoderPrevState[0] != digitalRead(PI_MOTOR_ENC_TL)) {
+  if (encoderPrevState[0] != digitalReadFast(PI_MOTOR_ENC_TL)) {
     encoderPrevState[0]=!encoderPrevState[0];
     totalEncoderValue[0]++;
     calibrationEncoderValue[0]++;
   }
-  if (encoderPrevState[1] != digitalRead(PI_MOTOR_ENC_TR)) {
+  if (encoderPrevState[1] != digitalReadFast(PI_MOTOR_ENC_TR)) {
     encoderPrevState[1]=!encoderPrevState[1];
     totalEncoderValue[1]++;
     calibrationEncoderValue[1]++;
   }
-  if (encoderPrevState[2] != digitalRead(PI_MOTOR_ENC_BR)) {
+  if (encoderPrevState[2] != digitalReadFast(PI_MOTOR_ENC_BR)) {
     encoderPrevState[2]=!encoderPrevState[2];
     totalEncoderValue[2]++;
     calibrationEncoderValue[2]++;
   }
-  if (encoderPrevState[3] != digitalRead(PI_MOTOR_ENC_BL)) {
+  if (encoderPrevState[3] != digitalReadFast(PI_MOTOR_ENC_BL)) {
     encoderPrevState[3]=!encoderPrevState[3];
     totalEncoderValue[3]++;
     calibrationEncoderValue[3]++;
@@ -76,8 +76,17 @@ void TimerInterruptHandler() {
   }
   else 
     timerTickCntr++;
-  if (stopAtEncoderValue>0 && totalEncoderValue[0]+totalEncoderValue[1]+totalEncoderValue[2]+totalEncoderValue[3] >= stopAtEncoderValue*4){
-    StopMoving();
+  if (stopAtEncoderValue>0){
+    long diff =  stopAtEncoderValue*4 - (totalEncoderValue[0]+totalEncoderValue[1]+totalEncoderValue[2]+totalEncoderValue[3]);
+    if (diff<5)
+      StopMoving();
+    else if (diff<50){
+      timerTickCntr = -10000; //prevent calibration while braking
+      analogWrite(PP_MOTOR_SPD_TL,20);
+      analogWrite(PP_MOTOR_SPD_TR,20);
+      analogWrite(PP_MOTOR_SPD_BR,20);
+      analogWrite(PP_MOTOR_SPD_BL,20);
+    }
   }
   //else if (stopAtAngle!=1000){
   //}
@@ -117,19 +126,19 @@ void MoveWheels(byte wheelDirections, byte powerPercentTL, byte powerPercentTR, 
  
     //set the vals
   realPowerAbs[0] = isCalibrationEnabled ? MapRealFromCache(0) : desiredPowerAbs[0];
-  digitalWrite(PO_MOTOR_DIR_TL,!isDirectionForward[0]);
+  digitalWriteFast(PO_MOTOR_DIR_TL,!isDirectionForward[0]);
   analogWrite(PP_MOTOR_SPD_TL,realPowerAbs[0]);
 
   realPowerAbs[1] = isCalibrationEnabled ? MapRealFromCache(1) : desiredPowerAbs[1];
-  digitalWrite(PO_MOTOR_DIR_TR,!isDirectionForward[1]);
+  digitalWriteFast(PO_MOTOR_DIR_TR,!isDirectionForward[1]);
   analogWrite(PP_MOTOR_SPD_TR,realPowerAbs[1]);
 
   realPowerAbs[2] = isCalibrationEnabled ? MapRealFromCache(2) : desiredPowerAbs[2];
-  digitalWrite(PO_MOTOR_DIR_BR,isDirectionForward[2]);
+  digitalWriteFast(PO_MOTOR_DIR_BR,isDirectionForward[2]);
   analogWrite(PP_MOTOR_SPD_BR,realPowerAbs[2]);
 
   realPowerAbs[3] = isCalibrationEnabled ? MapRealFromCache(3) : desiredPowerAbs[3];
-  digitalWrite(PO_MOTOR_DIR_BL,isDirectionForward[3]);
+  digitalWriteFast(PO_MOTOR_DIR_BL,isDirectionForward[3]);
   analogWrite(PP_MOTOR_SPD_BL,realPowerAbs[3]);
   
   if (desiredPowerPercent[0] > 0 || desiredPowerPercent[1] > 0 || desiredPowerPercent[2] > 0 || desiredPowerPercent[3] > 0){
@@ -145,28 +154,40 @@ void MoveWheels(byte wheelDirections, byte powerPercentTL, byte powerPercentTR, 
   }
 }
 
-void TurnLeft(byte powerPercent, unsigned int deltaDegrees=0) {
+void TurnLeft(byte powerPercent, unsigned int deltaDegrees=0, boolean delayWhileMoving=false) {
   MoveWheels(MOTOR_WHEEL_TR | MOTOR_WHEEL_BR, powerPercent, powerPercent, powerPercent, powerPercent);
-  if (deltaDegrees)
+  if (deltaDegrees){
     stopAtEncoderValue = (unsigned long)(5.35f * deltaDegrees); //ideally 3.8353  encoder ticks per degree
+    while(delayWhileMoving && isMoving)
+      delay(50);
+  }
 }
 
-void TurnRight(byte powerPercent, unsigned int deltaDegrees=0) {
+void TurnRight(byte powerPercent, unsigned int deltaDegrees=0, boolean delayWhileMoving=false) {
   MoveWheels(MOTOR_WHEEL_TL | MOTOR_WHEEL_BL, powerPercent, powerPercent, powerPercent, powerPercent);
-  if (deltaDegrees)
+  if (deltaDegrees){
     stopAtEncoderValue = (unsigned long)(5.35f * deltaDegrees); //ideally 3.8353 encoder ticks per degree
+    while(delayWhileMoving && isMoving)
+      delay(50);
+  }
 }
 
-void MoveForward(byte powerPercent, unsigned int distanceCm=0) {
+void MoveForward(byte powerPercent, unsigned int distanceCm=0, boolean delayWhileMoving=false) {
   MoveWheels(MOTOR_WHEEL_TL | MOTOR_WHEEL_TR | MOTOR_WHEEL_BL | MOTOR_WHEEL_BR, powerPercent, powerPercent, powerPercent, powerPercent);
-  if (distanceCm)
-    stopAtEncoderValue = (unsigned long)(16.32f * (distanceCm - (distanceCm > 4 ? (powerPercent/50 +1) :0))); // encoder ticks per CM
+  if (distanceCm){
+    stopAtEncoderValue = (unsigned long)(16.32f * distanceCm); // encoder ticks per CM
+    while(delayWhileMoving && isMoving)
+      delay(50);
+  }
 }
 
-void MoveBackward(byte powerPercent, unsigned int distanceCm=0) {
+void MoveBackward(byte powerPercent, unsigned int distanceCm=0, boolean delayWhileMoving=false) {
   MoveWheels(0, powerPercent, powerPercent, powerPercent, powerPercent);
-  if (distanceCm)
-    stopAtEncoderValue = (unsigned long)(16.32f * (distanceCm - (distanceCm > 4 ? (powerPercent/50 +1) :0))); // encoder ticks per CM , - inertia compensation
+  if (distanceCm){
+    stopAtEncoderValue = (unsigned long)(16.32f * distanceCm); // encoder ticks per CM 
+    while(delayWhileMoving && isMoving)
+      delay(50);
+  }
 }
   
 void StopMoving() {

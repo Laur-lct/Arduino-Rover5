@@ -19,7 +19,7 @@
 #define MOTOR_FWD_B 1
 
 #define MOTOR_TIMER_INTERVAL  1000//timer tick interval in microseconds
-#define MOTOR_CALIBRATION_TICK 250 // timer tick number to run motor calibration 
+#define MOTOR_CALIBRATION_TICK 200 // timer tick number to run motor calibration 
 
 //binary wheel codes
 #define MOTOR_WHEEL_TL 1

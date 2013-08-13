@@ -2,25 +2,32 @@
 
 int milestoneIR[16];
 int RawIRMeasureAccurate(byte triesLeft=3) {
-  long raws[3];
+  int raws[5];
   const int maxDiff = 16;
   if (!digitalRead(PO_IRANALOG_SWITCH)){
     digitalWrite(PO_IRANALOG_SWITCH, true);
     delay(40);
   }
   raws[0] = analogRead(PA_IRANALOG);
-  delay(40);
+  delay(5);
   raws[1] = analogRead(PA_IRANALOG);
-  delay(40);
+  delay(5);
   raws[2] = analogRead(PA_IRANALOG);
+  delay(5);
+  raws[3] = analogRead(PA_IRANALOG);
+  delay(5);
+  raws[4] = analogRead(PA_IRANALOG);
     
-  if (triesLeft==0 || (raws[0]-raws[1] > -maxDiff && raws[0]-raws[1] < maxDiff && raws[0]-raws[2] > -maxDiff && raws[0]-raws[2] < maxDiff))
-    return (raws[0] + raws[1] + raws[2])/3;
+  if (triesLeft==0 || (raws[0]-raws[1] > -maxDiff && raws[0]-raws[1] < maxDiff && 
+                       raws[0]-raws[2] > -maxDiff && raws[0]-raws[2] < maxDiff && 
+                       raws[0]-raws[3] > -maxDiff && raws[0]-raws[3] < maxDiff && 
+                       raws[0]-raws[4] > -maxDiff && raws[0]-raws[4] < maxDiff))
+    return (raws[0] + raws[1] + raws[2] + raws[3] + raws[4])/5;
   return RawIRMeasureAccurate(--triesLeft);
 }
 
 // returns distance in cm. from 5 to 80
-int GetDistanceByIR(byte maxTries=0){
+int GetDistanceByIR(byte maxTries=3){
   if (!digitalRead(PO_IRANALOG_SWITCH)){
     digitalWrite(PO_IRANALOG_SWITCH, true);
     delay(40);
@@ -32,14 +39,14 @@ int GetDistanceByIR(byte maxTries=0){
 
   //else lookup
   for (; milestoneIndex < 16; milestoneIndex++){
- if (milestoneIR[milestoneIndex] <= raw)
-   break;
+    if (milestoneIR[milestoneIndex] <= raw)
+      break;
   }
   if (milestoneIndex==16) // something was beyond 80 cm
     return 80;
   //then calculate
-  float weight = (float)(milestoneIR[milestoneIndex-1] - raw) / (milestoneIR[milestoneIndex-1] - milestoneIR[milestoneIndex]);
-  return (int)(weight * milestoneIR[milestoneIndex-1] + (1-weight)*milestoneIR[milestoneIndex] + 0.5); 
+  float weight = (float)(raw - milestoneIR[milestoneIndex]) / (milestoneIR[milestoneIndex-1] - milestoneIR[milestoneIndex]);
+  return (int)(weight * ((milestoneIndex-1)*5) + (1-weight)*(milestoneIndex*5) + 0.5 + 5); 
 }
 
 void InitIRSensor(){
