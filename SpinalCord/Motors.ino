@@ -80,12 +80,12 @@ void TimerInterruptHandler() {
     long diff =  stopAtEncoderValue*4 - (totalEncoderValue[0]+totalEncoderValue[1]+totalEncoderValue[2]+totalEncoderValue[3]);
     if (diff<5)
       StopMoving();
-    else if (diff<50){
+    else if (diff<40 + desiredPowerPercent[0]/10){
       timerTickCntr = -10000; //prevent calibration while braking
-      analogWrite(PP_MOTOR_SPD_TL,20);
-      analogWrite(PP_MOTOR_SPD_TR,20);
-      analogWrite(PP_MOTOR_SPD_BR,20);
-      analogWrite(PP_MOTOR_SPD_BL,20);
+      analogWrite(PP_MOTOR_SPD_TL,25);
+      analogWrite(PP_MOTOR_SPD_TR,25);
+      analogWrite(PP_MOTOR_SPD_BR,25);
+      analogWrite(PP_MOTOR_SPD_BL,25);
     }
   }
   //else if (stopAtAngle!=1000){

@@ -1,28 +1,49 @@
 //all sensors related functions will go here
 
 int milestoneIR[16];
+
+// typically takes 60-100 miliseconds.
 int RawIRMeasureAccurate(byte triesLeft=3) {
   int raws[5];
-  const int maxDiff = 16;
+  const int maxDiff = 11;
   if (!digitalRead(PO_IRANALOG_SWITCH)){
     digitalWrite(PO_IRANALOG_SWITCH, true);
-    delay(40);
+    delay(30);
   }
-  raws[0] = analogRead(PA_IRANALOG);
-  delay(5);
-  raws[1] = analogRead(PA_IRANALOG);
-  delay(5);
-  raws[2] = analogRead(PA_IRANALOG);
-  delay(5);
-  raws[3] = analogRead(PA_IRANALOG);
-  delay(5);
-  raws[4] = analogRead(PA_IRANALOG);
-    
-  if (triesLeft==0 || (raws[0]-raws[1] > -maxDiff && raws[0]-raws[1] < maxDiff && 
-                       raws[0]-raws[2] > -maxDiff && raws[0]-raws[2] < maxDiff && 
-                       raws[0]-raws[3] > -maxDiff && raws[0]-raws[3] < maxDiff && 
-                       raws[0]-raws[4] > -maxDiff && raws[0]-raws[4] < maxDiff))
-    return (raws[0] + raws[1] + raws[2] + raws[3] + raws[4])/5;
+  // the idea of filtering algorithm well expleined here:   http://habrahabr.ru/post/167177/
+  char candidateIndex=-1;
+  char confidence=0;
+  char lastMeasureIdx=4;
+  for (char i=0; i<5; i++){
+    raws[i] = analogRead(PA_IRANALOG);
+    if (confidence == 0) {
+      candidateIndex = i;
+      confidence++;
+    }
+    else if (raws[candidateIndex]-raws[i] > -maxDiff && raws[candidateIndex]-raws[i] < maxDiff) 
+      confidence++;
+    else 
+      confidence--;
+    if (confidence> 5/2){
+      lastMeasureIdx=i;
+      break;
+    }
+    delay(20);
+  }
+  int total=0;
+  confidence=0;
+  //DBG_ONLY(Serial.print("IR raws: ")); 
+  for (char i=0; i<=lastMeasureIdx; i++){
+    //DBG_ONLY(Serial.print(raws[i]));
+    //DBG_ONLY(Serial.print(" "));
+    if (raws[candidateIndex]-raws[i] > -maxDiff && raws[candidateIndex]-raws[i] < maxDiff){
+      confidence++;
+      total+=raws[i];
+    }
+  }
+  //DBG_ONLY(Serial.println());  
+  if (confidence > 5/2 || triesLeft==0)
+    return total/confidence;
   return RawIRMeasureAccurate(--triesLeft);
 }
 

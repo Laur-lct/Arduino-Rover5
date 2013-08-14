@@ -34,7 +34,8 @@ long USonicDoRawMeasure(){
   // pulse whose duration is the time (in microseconds) from the sending
   // of the ping to the reception of its echo off of an object.
   pinMode(PO_SONICSENSOR_TRIGGER, INPUT);
-  return pulseIn(PO_SONICSENSOR_TRIGGER, HIGH,20000);
+  long res = pulseIn(PO_SONICSENSOR_TRIGGER, HIGH,20000);
+  return res >0 ? res :20000;
 }
 
 int microsecondsToCentimeters(long microseconds){
