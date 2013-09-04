@@ -154,7 +154,7 @@ void MoveWheels(byte wheelDirections, byte powerPercentTL, byte powerPercentTR, 
   }
 }
 
-void TurnLeft(byte powerPercent, unsigned int deltaDegrees=0, boolean delayWhileMoving=false) {
+void TurnLeft(byte powerPercent, unsigned int deltaDegrees, boolean delayWhileMoving) {
   MoveWheels(MOTOR_WHEEL_TR | MOTOR_WHEEL_BR, powerPercent, powerPercent, powerPercent, powerPercent);
   if (deltaDegrees){
     stopAtEncoderValue = (unsigned long)(5.35f * deltaDegrees); //ideally 3.8353  encoder ticks per degree
@@ -172,7 +172,7 @@ void TurnRight(byte powerPercent, unsigned int deltaDegrees=0, boolean delayWhil
   }
 }
 
-void MoveForward(byte powerPercent, unsigned int distanceCm=0, boolean delayWhileMoving=false) {
+void MoveForward(byte powerPercent, unsigned int distanceCm, boolean delayWhileMoving) {
   MoveWheels(MOTOR_WHEEL_TL | MOTOR_WHEEL_TR | MOTOR_WHEEL_BL | MOTOR_WHEEL_BR, powerPercent, powerPercent, powerPercent, powerPercent);
   if (distanceCm){
     stopAtEncoderValue = (unsigned long)(16.32f * distanceCm); // encoder ticks per CM
@@ -181,7 +181,7 @@ void MoveForward(byte powerPercent, unsigned int distanceCm=0, boolean delayWhil
   }
 }
 
-void MoveBackward(byte powerPercent, unsigned int distanceCm=0, boolean delayWhileMoving=false) {
+void MoveBackward(byte powerPercent, unsigned int distanceCm, boolean delayWhileMoving) {
   MoveWheels(0, powerPercent, powerPercent, powerPercent, powerPercent);
   if (distanceCm){
     stopAtEncoderValue = (unsigned long)(16.32f * distanceCm); // encoder ticks per CM 

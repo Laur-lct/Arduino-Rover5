@@ -22,8 +22,9 @@ void StartStrategyTest() {
 }
 
 void RunStrategyTest() {
-  int curDistIR = GetDistanceByIR();
-  int curDistUS = USonicFire();
+  int curDistIR;
+  int curDistUS;
+  GetDistanceUSandIR(&curDistIR,&curDistUS);
   int curDist = min(curDistIR, curDistUS);
   DBG_ONLY(Serial.print("Pan angle = dist IR/US:\t"));
   DBG_ONLY(Serial.print((int)currentPan));
@@ -48,9 +49,9 @@ void RunStrategyTest() {
   if(!flg)
   SetHeadPan(currentPan+delta);
   if (abs(delta)!=15)
-    delay(50);
+    delay(40);
   else 
-    delay(150);
+    delay(140);
   
   
   if ((abs(delta)==10 && (currentPan<=-88 || currentPan>=88)) || (abs(delta)==15 && (currentPan<=-15 || currentPan>=15))){
@@ -61,7 +62,7 @@ void RunStrategyTest() {
       if (abs(delta)==15 && aboveTresholdSerie<3){
         SetHeadPan(currentPan <=0 ? -88 : 88);
         delta=(currentPan <=0 ? -10 : 10);
-        delay(150);
+        delay(140);
       }
       else if (abs(delta)==15 && aboveTresholdSerie>=3 && !isMoving)
           //DBG_ONLY(Serial.println("No obstacles. fwd"));
@@ -84,7 +85,7 @@ void RunStrategyTest() {
           MoveForward(30);
           SetHeadPan(currentPan <=0 ? -15 : 15);
           delta=(currentPan <=0 ? -15 : 15);
-          delay(150);
+          delay(140);
         }
         else if (maxDistPan < 0){
           //DBG_ONLY(Serial.println("Left"));
@@ -105,7 +106,7 @@ void RunStrategyTest() {
     }
   }
   
-  if (cntr<5000)
+  if (cntr<2000)
     cntr++;
   else   
     SetMode(0);

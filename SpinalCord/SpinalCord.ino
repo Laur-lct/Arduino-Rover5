@@ -1,6 +1,7 @@
 //main file with entry point
 #include "Pinout.h"
 #include "Constants.h"
+#include "_sharedMethods.h"
 #include <LED.h>
 #include <EEPROM.h>
 #include <TimerOne.h>
@@ -112,7 +113,7 @@ void InitAllOutputPins(){
   digitalWrite(PO_SONICSENSOR_TRIGGER,LOW);
   
   pinMode(PO_IRBUMPER_SWITCH,OUTPUT);
-  digitalWrite(PO_IRBUMPER_SWITCH,HIGH);
+  digitalWrite(PO_IRBUMPER_SWITCH,LOW);
   
   pinMode(PO_IRANALOG_SWITCH,OUTPUT);
   digitalWrite(PO_IRANALOG_SWITCH,LOW);
