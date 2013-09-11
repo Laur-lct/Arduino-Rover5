@@ -111,16 +111,16 @@ int USonicFireAccurate(byte triesLeft=3){
 long USonicDoRawMeasure(){
   // The PING))) is triggered by a HIGH pulse of 2 or more microseconds.
   // Give a short LOW pulse beforehand to ensure a clean HIGH pulse:
-  pinMode(PO_SONICSENSOR_TRIGGER, OUTPUT);
-  digitalWrite(PO_SONICSENSOR_TRIGGER, LOW);
+  pinModeFast(PO_SONICSENSOR_TRIGGER, OUTPUT);
+  digitalWriteFast(PO_SONICSENSOR_TRIGGER, LOW);
   delayMicroseconds(2);
-  digitalWrite(PO_SONICSENSOR_TRIGGER, HIGH);
+  digitalWriteFast(PO_SONICSENSOR_TRIGGER, HIGH);
   delayMicroseconds(5);
-  digitalWrite(PO_SONICSENSOR_TRIGGER, LOW);
+  digitalWriteFast(PO_SONICSENSOR_TRIGGER, LOW);
   // The same pin is used to read the signal from the PING))): a HIGH
   // pulse whose duration is the time (in microseconds) from the sending
   // of the ping to the reception of its echo off of an object.
-  pinMode(PO_SONICSENSOR_TRIGGER, INPUT);
+  pinModeFast(PO_SONICSENSOR_TRIGGER, INPUT);
   long res = pulseIn(PO_SONICSENSOR_TRIGGER, HIGH,20000);
   return res >0 ? res :20000;
 }
