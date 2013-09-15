@@ -54,13 +54,13 @@ void RunStrategyTest() {
     delay(140);
   
   
-  if ((abs(delta)==10 && (currentPan<=-88 || currentPan>=88)) || (abs(delta)==15 && (currentPan<=-15 || currentPan>=15))){
+  if ((abs(delta)==10 && (currentPan<=(HEAD_REL_PAN_MIN) || currentPan>=(HEAD_REL_PAN_MAX))) || (abs(delta)==15 && (currentPan<=-15 || currentPan>=15))){
     if (!flg)
       flg=true;
     else {
       flg=false;
       if (abs(delta)==15 && aboveTresholdSerie<3){
-        SetHeadPan(currentPan <=0 ? -88 : 88);
+        SetHeadPan(currentPan <=0 ? HEAD_REL_PAN_MIN : HEAD_REL_PAN_MAX);
         delta=(currentPan <=0 ? -10 : 10);
         delay(140);
       }

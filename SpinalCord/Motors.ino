@@ -15,7 +15,8 @@ unsigned long totalEncoderValue[4] = {0,0,0,0};
 unsigned int calibrationEncoderValue[4] = {0,0,0,0};
 byte lastDirectionsByte;
 unsigned long stopAtEncoderValue=0;
-int stopAtAngle = 1000; 
+int stopAtAngle = 1000;
+
 void InitEncoders(){
   totalEncoderValue[0] =0;
   totalEncoderValue[1] =0;
@@ -30,7 +31,6 @@ void InitEncoders(){
   Timer1.initialize(MOTOR_TIMER_INTERVAL);
   Timer1.attachInterrupt(TimerInterruptHandler); // attach the service routine here
 }
-
 
 void DeactivateEncoders(){
   Timer1.detachInterrupt();
@@ -110,19 +110,19 @@ void MoveWheels(byte wheelDirections, byte powerPercentTL, byte powerPercentTR, 
   // preset arrays 
   desiredPowerPercent[0] = powerPercentTL > 100 ? 100 : powerPercentTL;
   desiredPowerAbs[0] = desiredPowerPercent[0] > 0 ? map(desiredPowerPercent[0], 1, 100, 0, 255) : 0;
-  isDirectionForward[0] = (wheelDirections & MOTOR_WHEEL_TL) > 0;
+  isDirectionForward[0] = (wheelDirections & BINARY_CODE_TL) > 0;
 
   desiredPowerPercent[1] = powerPercentTR > 100 ? 100 : powerPercentTR;
   desiredPowerAbs[1] = desiredPowerPercent[1] > 0 ? map(desiredPowerPercent[1], 1, 100, 0, 255) : 0;
-  isDirectionForward[1] = (wheelDirections & MOTOR_WHEEL_TR) > 0;
+  isDirectionForward[1] = (wheelDirections & BINARY_CODE_TR) > 0;
  
   desiredPowerPercent[2] = powerPercentBR > 100 ? 100 : powerPercentBR;
   desiredPowerAbs[2] = desiredPowerPercent[2] > 0 ? map(desiredPowerPercent[2], 1, 100, 0, 255) : 0;
-  isDirectionForward[2] = (wheelDirections & MOTOR_WHEEL_BR) > 0;
+  isDirectionForward[2] = (wheelDirections & BINARY_CODE_BR) > 0;
 
   desiredPowerPercent[3] = powerPercentBL > 100 ? 100 : powerPercentBL;
   desiredPowerAbs[3] = desiredPowerPercent[3] > 0 ? map(desiredPowerPercent[3], 1, 100, 0, 255) : 0;
-  isDirectionForward[3] = (wheelDirections & MOTOR_WHEEL_BL) > 0;
+  isDirectionForward[3] = (wheelDirections & BINARY_CODE_BL) > 0;
  
     //set the vals
   realPowerAbs[0] = isCalibrationEnabled ? MapRealFromCache(0) : desiredPowerAbs[0];
@@ -155,7 +155,7 @@ void MoveWheels(byte wheelDirections, byte powerPercentTL, byte powerPercentTR, 
 }
 
 void TurnLeft(byte powerPercent, unsigned int deltaDegrees, boolean delayWhileMoving) {
-  MoveWheels(MOTOR_WHEEL_TR | MOTOR_WHEEL_BR, powerPercent, powerPercent, powerPercent, powerPercent);
+  MoveWheels(BINARY_CODE_TR | BINARY_CODE_BR, powerPercent, powerPercent, powerPercent, powerPercent);
   if (deltaDegrees){
     stopAtEncoderValue = (unsigned long)(5.35f * deltaDegrees); //ideally 3.8353  encoder ticks per degree
     while(delayWhileMoving && isMoving)
@@ -164,7 +164,7 @@ void TurnLeft(byte powerPercent, unsigned int deltaDegrees, boolean delayWhileMo
 }
 
 void TurnRight(byte powerPercent, unsigned int deltaDegrees=0, boolean delayWhileMoving=false) {
-  MoveWheels(MOTOR_WHEEL_TL | MOTOR_WHEEL_BL, powerPercent, powerPercent, powerPercent, powerPercent);
+  MoveWheels(BINARY_CODE_TL | BINARY_CODE_BL, powerPercent, powerPercent, powerPercent, powerPercent);
   if (deltaDegrees){
     stopAtEncoderValue = (unsigned long)(5.35f * deltaDegrees); //ideally 3.8353 encoder ticks per degree
     while(delayWhileMoving && isMoving)
@@ -173,7 +173,7 @@ void TurnRight(byte powerPercent, unsigned int deltaDegrees=0, boolean delayWhil
 }
 
 void MoveForward(byte powerPercent, unsigned int distanceCm, boolean delayWhileMoving) {
-  MoveWheels(MOTOR_WHEEL_TL | MOTOR_WHEEL_TR | MOTOR_WHEEL_BL | MOTOR_WHEEL_BR, powerPercent, powerPercent, powerPercent, powerPercent);
+  MoveWheels(BINARY_CODE_TL | BINARY_CODE_TR | BINARY_CODE_BL | BINARY_CODE_BR, powerPercent, powerPercent, powerPercent, powerPercent);
   if (distanceCm){
     stopAtEncoderValue = (unsigned long)(16.32f * distanceCm); // encoder ticks per CM
     while(delayWhileMoving && isMoving)
@@ -191,7 +191,7 @@ void MoveBackward(byte powerPercent, unsigned int distanceCm, boolean delayWhile
 }
   
 void StopMoving() {
-  MoveWheels(MOTOR_WHEEL_TL | MOTOR_WHEEL_TR | MOTOR_WHEEL_BL | MOTOR_WHEEL_BR, 0,0,0,0);
+  MoveWheels(BINARY_CODE_TL | BINARY_CODE_TR | BINARY_CODE_BL | BINARY_CODE_BR, 0,0,0,0);
 }
 
 void CalibrateMotors(){

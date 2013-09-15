@@ -18,28 +18,27 @@
 #define MOTOR_FWD_T 0
 #define MOTOR_FWD_B 1
 
-#define MOTOR_TIMER_INTERVAL  1000//timer tick interval in microseconds
+#define SERVICE_TIMER_INTERVAL  20//timer tick interval in MILLIseconds
+#define MOTOR_TIMER_INTERVAL  1000//timer tick interval in MICROseconds
 #define MOTOR_CALIBRATION_TICK 200 // timer tick number to run motor calibration 
 
-//binary wheel codes
-#define MOTOR_WHEEL_TL 1
-#define MOTOR_WHEEL_TR 2
-#define MOTOR_WHEEL_BR 4
-#define MOTOR_WHEEL_BL 8
+//binary codes for flags - TopLeft, TopRight, BottomRight, BottomLeft 
+#define BINARY_CODE_TL 1
+#define BINARY_CODE_TR 2
+#define BINARY_CODE_BR 4
+#define BINARY_CODE_BL 8
 
 //head servo constants
-#define HEAD_PAN_CENTER 88
+#define HEAD_PAN_CENTER 86
 #define HEAD_TILT_CENTER 100
-#define HEAD_PAN_MAX 178
-#define HEAD_PAN_MIN 0
-#define HEAD_TILT_MAX 140
-#define HEAD_TILT_MIN 15
-
-//binary bumper  IR sensor codes
-#define SENSOR_IRBUMP_TL 1
-#define SENSOR_IRBUMP_TR 2
-#define SENSOR_IRBUMP_BR 4
-#define SENSOR_IRBUMP_BL 8
+#define HEAD_ABS_PAN_MAX 178
+#define HEAD_ABS_PAN_MIN 0
+#define HEAD_ABS_TILT_MAX 140
+#define HEAD_ABS_TILT_MIN 15
+#define HEAD_REL_PAN_MAX HEAD_PAN_CENTER - HEAD_ABS_PAN_MIN
+#define HEAD_REL_PAN_MIN HEAD_PAN_CENTER - HEAD_ABS_PAN_MAX
+#define HEAD_REL_TILT_MAX HEAD_ABS_TILT_MAX - HEAD_TILT_CENTER
+#define HEAD_REL_TILT_MIN HEAD_ABS_TILT_MAX - HEAD_TILT_CENTER
 
 //here go all EEPROM memory addresses
 #define MEMADDR_LASTMODE 0

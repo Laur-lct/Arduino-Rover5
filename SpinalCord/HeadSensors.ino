@@ -111,17 +111,19 @@ int USonicFireAccurate(byte triesLeft=3){
 long USonicDoRawMeasure(){
   // The PING))) is triggered by a HIGH pulse of 2 or more microseconds.
   // Give a short LOW pulse beforehand to ensure a clean HIGH pulse:
-  pinModeFast(PO_SONICSENSOR_TRIGGER, OUTPUT);
-  digitalWriteFast(PO_SONICSENSOR_TRIGGER, LOW);
+  pinMode(PO_SONICSENSOR_TRIGGER, OUTPUT);
+  digitalWrite(PO_SONICSENSOR_TRIGGER, LOW);
   delayMicroseconds(2);
-  digitalWriteFast(PO_SONICSENSOR_TRIGGER, HIGH);
+  digitalWrite(PO_SONICSENSOR_TRIGGER, HIGH);
   delayMicroseconds(5);
-  digitalWriteFast(PO_SONICSENSOR_TRIGGER, LOW);
+  digitalWrite(PO_SONICSENSOR_TRIGGER, LOW);
   // The same pin is used to read the signal from the PING))): a HIGH
   // pulse whose duration is the time (in microseconds) from the sending
   // of the ping to the reception of its echo off of an object.
-  pinModeFast(PO_SONICSENSOR_TRIGGER, INPUT);
+  pinMode(PO_SONICSENSOR_TRIGGER, INPUT);
+  MsTimer2::stop();
   long res = pulseIn(PO_SONICSENSOR_TRIGGER, HIGH,20000);
+  MsTimer2::start();
   return res >0 ? res :20000;
 }
 
@@ -139,8 +141,8 @@ int microsecondsToCentimeters(long microseconds){
 void GetDistanceUSandIR (int *distIR, int *distUS, byte triesLeft=3){
   int rawsIR[5];
   long rawsUS[5];
-  const int maxDiffIR = 11;
-  const int maxDiffUS = 29*3;
+  int maxDiffIR = 11;
+  int maxDiffUS = 29*2;
 
   char candidateIndexIR=-1;
   char confidenceIR=0;
@@ -170,6 +172,7 @@ void GetDistanceUSandIR (int *distIR, int *distUS, byte triesLeft=3){
       if (confidenceUS == 0) {
         candidateIndexUS = i;
         confidenceUS++;
+        maxDiffUS = 29*2+rawsUS[candidateIndexUS]*0.01;
       }
       else if (rawsUS[i] > 60 && rawsUS[candidateIndexUS]-rawsUS[i] > -maxDiffUS && rawsUS[candidateIndexUS]-rawsUS[i] < maxDiffUS) 
         confidenceUS++;
@@ -188,28 +191,28 @@ void GetDistanceUSandIR (int *distIR, int *distUS, byte triesLeft=3){
   long total=0;
   confidenceIR=0;
   confidenceUS=0;
-  //DBG_ONLY(Serial.print("IR raws: ")); 
+  DBG_ONLY(Serial.print("IR raws: ")); 
   for (char i=0; i<=lastMeasureIdxIR; i++){
-    //DBG_ONLY(Serial.print(rawsIR[i]));
-    //DBG_ONLY(Serial.print(" "));
+    DBG_ONLY(Serial.print(rawsIR[i]));
+    DBG_ONLY(Serial.print(" "));
     if (rawsIR[candidateIndexIR]-rawsIR[i] > -maxDiffIR && rawsIR[candidateIndexIR]-rawsIR[i] < maxDiffIR){
       confidenceIR++;
       total+=rawsIR[i];
     }
   }
-  //DBG_ONLY(Serial.println());
+  DBG_ONLY(Serial.println());
   *distIR = IRrawToCm((int)(total/confidenceIR));
   total=0;
-  //DBG_ONLY(Serial.print("US raws: ")); 
+  DBG_ONLY(Serial.print("US raws: ")); 
   for (char i=0; i<=lastMeasureIdxUS; i++){
-    //DBG_ONLY(Serial.print(rawsUS[i]));
-    //DBG_ONLY(Serial.print(" "));
+    DBG_ONLY(Serial.print(rawsUS[i]));
+    DBG_ONLY(Serial.print(" "));
     if (rawsUS[i] > 60 && rawsUS[candidateIndexUS]-rawsUS[i] > -maxDiffUS && rawsUS[candidateIndexUS]-rawsUS[i] < maxDiffUS){
       confidenceUS++;
       total+=rawsUS[i];
     }
   }
-  //DBG_ONLY(Serial.println());
+  DBG_ONLY(Serial.println());
   *distUS = microsecondsToCentimeters((int)(total/confidenceUS));
   if (!(confidenceIR > 5/2 && confidenceUS > 5/2) && triesLeft>0)
     GetDistanceUSandIR(distIR, distUS, --triesLeft);

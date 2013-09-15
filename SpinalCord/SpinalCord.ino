@@ -8,7 +8,7 @@
 #if defined(DEBUG)
   #include <MemoryFree.h> //for debug purposes. Read More http://playground.arduino.cc/Code/AvailableMemory
 #endif
-#include <Servo.h>
+#include <SoftwareServo.h>
 #include <DigitalWriteFast.h>
 #include <MsTimer2.h>
 
@@ -41,11 +41,12 @@ void setup() {
   
   InitModeAndModeButton();
   InitStrategyMethods();
-  MsTimer2::set(100,ServiceTimerRoutine);
-  MsTimer2::start();
   InitIRSensor();
+  InitServiceInterrupt();
   CenterHead();
-  delay(200);
+  delay(300);
+  //DisableHeadServos();
+  
   //setup finished
   statusLED1->off();
 }
@@ -109,43 +110,41 @@ void InitStatusLeds() {
   statusLED2->off();
 }
 
-void ServiceTimerRoutine(){
-}
 //sets pinmode of all pins and writes initial values for outputs
 void InitAllPins(){
-  pinModeFast(PI_BUTTON_MODE, INPUT);
+  pinMode(PI_BUTTON_MODE, INPUT);
   
-  pinModeFast(PO_SONICSENSOR_TRIGGER, OUTPUT);
-  digitalWriteFast(PO_SONICSENSOR_TRIGGER,LOW);
+  pinMode(PO_SONICSENSOR_TRIGGER, OUTPUT);
+  digitalWrite(PO_SONICSENSOR_TRIGGER,LOW);
   
-  pinModeFast(PO_IRBUMPER_SWITCH,OUTPUT);
-  digitalWriteFast(PO_IRBUMPER_SWITCH,LOW);
+  pinMode(PO_IRBUMPER_SWITCH,OUTPUT);
+  digitalWrite(PO_IRBUMPER_SWITCH,HIGH);
   
-  pinModeFast(PO_IRANALOG_SWITCH,OUTPUT);
-  digitalWriteFast(PO_IRANALOG_SWITCH,LOW);
+  pinMode(PO_IRANALOG_SWITCH,OUTPUT);
+  digitalWrite(PO_IRANALOG_SWITCH,LOW);
   
-  pinModeFast(PP_MOTOR_SPD_TL,OUTPUT);
-  pinModeFast(PP_MOTOR_SPD_TR,OUTPUT);
-  pinModeFast(PP_MOTOR_SPD_BL,OUTPUT);
-  pinModeFast(PP_MOTOR_SPD_BR,OUTPUT);
-  digitalWriteFast(PP_MOTOR_SPD_TL,LOW);
-  digitalWriteFast(PP_MOTOR_SPD_TR,LOW);
-  digitalWriteFast(PP_MOTOR_SPD_BL,LOW);
-  digitalWriteFast(PP_MOTOR_SPD_BR,LOW);
+  pinMode(PP_MOTOR_SPD_TL,OUTPUT);
+  pinMode(PP_MOTOR_SPD_TR,OUTPUT);
+  pinMode(PP_MOTOR_SPD_BL,OUTPUT);
+  pinMode(PP_MOTOR_SPD_BR,OUTPUT);
+  digitalWrite(PP_MOTOR_SPD_TL,LOW);
+  digitalWrite(PP_MOTOR_SPD_TR,LOW);
+  digitalWrite(PP_MOTOR_SPD_BL,LOW);
+  digitalWrite(PP_MOTOR_SPD_BR,LOW);
   
   pinMode(PO_MOTOR_DIR_TL,OUTPUT);
   pinMode(PO_MOTOR_DIR_TR,OUTPUT);
   pinMode(PO_MOTOR_DIR_BL,OUTPUT);
   pinMode(PO_MOTOR_DIR_BR,OUTPUT);
-  digitalWriteFast(PO_MOTOR_DIR_TL,MOTOR_FWD_T);
-  digitalWriteFast(PO_MOTOR_DIR_TR,MOTOR_FWD_T);
-  digitalWriteFast(PO_MOTOR_DIR_BL,MOTOR_FWD_B);
-  digitalWriteFast(PO_MOTOR_DIR_BR,MOTOR_FWD_B);
+  digitalWrite(PO_MOTOR_DIR_TL,MOTOR_FWD_T);
+  digitalWrite(PO_MOTOR_DIR_TR,MOTOR_FWD_T);
+  digitalWrite(PO_MOTOR_DIR_BL,MOTOR_FWD_B);
+  digitalWrite(PO_MOTOR_DIR_BR,MOTOR_FWD_B);
   
-  pinModeFast(PI_MOTOR_ENC_TL,INPUT);
-  pinModeFast(PI_MOTOR_ENC_TR,INPUT);
-  pinModeFast(PI_MOTOR_ENC_BL,INPUT);
-  pinModeFast(PI_MOTOR_ENC_BR,INPUT);
+  pinMode(PI_MOTOR_ENC_TL,INPUT);
+  pinMode(PI_MOTOR_ENC_TR,INPUT);
+  pinMode(PI_MOTOR_ENC_BL,INPUT);
+  pinMode(PI_MOTOR_ENC_BR,INPUT);
   
 }
 
