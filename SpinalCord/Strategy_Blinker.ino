@@ -16,7 +16,7 @@ void RunStrategyBlinker() {
   //DBG_ONLY(Serial.println("blinking..."));
   //DBG_ONLY(Serial.print("Batt voltage="));
   int ir, us;
-  GetDistanceUSandIR(&ir,&us);
+  //GetDistanceUSandIR(&ir,&us);
   /*DBG_ONLY(Serial.print("Batt voltage="));
   DBG_ONLY(Serial.println(currVoltage));
   DBG_ONLY(Serial.print("current draw="));
