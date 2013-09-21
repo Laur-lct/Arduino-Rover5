@@ -2,6 +2,9 @@
 // Naming pattern (all uppercase):
 // P + <I:input, A:analog input, O:output, P:pwm output>_ + <general part name> + _ + <purpose> + _ + <where applicable: left, right, top, bottom, position etc...>
 
+#define PO_BLUETOOTH_TX 10  // TX
+#define PI_BLUETOOTH_RX 11  // RX
+
 #define PI_BUTTON_MODE 2
 #define PP_LED_STATUS_1 13
 #define PP_LED_STATUS_2 3

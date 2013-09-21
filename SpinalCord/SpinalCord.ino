@@ -12,6 +12,8 @@
 #include <DigitalWriteFast.h>
 #include <MsTimer2.h>
 
+#include <SoftwareSerial.h>  // for bluetooth
+
 
 typedef void (*functionPtr)();
 
@@ -46,6 +48,8 @@ void setup() {
   CenterHead();
   delay(300);
   //DisableHeadServos();
+  
+  InitBluetooth();
   
   //setup finished
   statusLED1->off();
