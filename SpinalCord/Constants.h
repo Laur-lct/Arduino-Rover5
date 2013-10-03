@@ -13,11 +13,11 @@
     #define DEBUG_PRINTLN(x)
 #endif
 #define EEPROM_READ_INT(addr) (int)(((EEPROM.read(addr) << 0) & 0xFF) + ((EEPROM.read(addr+1) << 8) & 0xFF00))
-#define MODES_MAX 2 //currently 2 modes for two different strategies
+#define MODES_MAX 3 //currently 2 modes for two different strategies
 #define MODES_MIN_BROWSABLE 0 //minimum mode index, that could be set via mode button. 
 
 #define MODE_BLINKER 0 // genius strategy of blinking with status led 2 
-#define MODE_LIGHTSEEKER 1 // robot will try to turn to strongest light source 
+#define MODE_LIGHTSEEKER 2 // robot will try to turn to strongest light source 
 
 //indicates correct forward direction flag for each shaft.
 #define MOTOR_FWD_T 0

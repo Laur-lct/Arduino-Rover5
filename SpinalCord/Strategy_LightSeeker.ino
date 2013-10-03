@@ -14,8 +14,8 @@ void StartStrategyLightSeeker() {
 }
 
 void RunStrategyLightSeeker() {
-  lightLeft = (lightLeft+analogRead(PA_LIGHTSENSOR_L))/2;
-  lightRight = (lightRight+analogRead(PA_LIGHTSENSOR_R))/2;
+  lightLeft = analogRead(PA_LIGHTSENSOR_L);
+  lightRight = analogRead(PA_LIGHTSENSOR_R);
   DBG_ONLY(Serial.print("Light: left="));
   DBG_ONLY(Serial.print(lightLeft));
   DBG_ONLY(Serial.print(", right="));
@@ -38,15 +38,18 @@ void RunStrategyLightSeeker() {
       cntrR--;
   }
   
-  if (cntrL > 20){
+  if (cntrL > 10){
     cntrL--;
-    TurnLeft(50);
+    TurnLeft(30);
+    tickCntr=0;
   }
-  else if (cntrR > 20){
+  else if (cntrR > 10){
     cntrR--;
-    TurnRight(50);
+    TurnRight(30);
+    tickCntr=0;
   }
   else {
+    tickCntr++;
     StopMoving();
   }
   delay(100);

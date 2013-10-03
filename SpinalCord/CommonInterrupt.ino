@@ -1,6 +1,6 @@
 // General service interrupt routine and variables here.
 // measures all continuous sensors values like battery voltage, IRBumper, light intensity etc. 
-// we cannot do compass measurements here as it takes too much time
+// we cannot read compass measurements here as it takes too much time
 
 //management
 //boolean measure

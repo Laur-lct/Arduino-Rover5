@@ -19,10 +19,6 @@
 
 #include "_sharedMethods.h"
 
-
-#include <SoftwareSerial.h>  // for bluetooth
-
-
 typedef void (*functionPtr)();
 
 //current and previous robot mode (strategy)
@@ -79,18 +75,18 @@ void loop() {
 void InitStrategyMethods() {
   //start methods
   strategyMethods[0][0] = StartStrategyBlinker;
-  strategyMethods[0][1] = StartStrategyTest;//StartStrategyLightSeeker;
-  //strategyMethods[0][2] = Dummy;
+  strategyMethods[0][1] = StartStrategyTest;
+  strategyMethods[0][2] = StartStrategyLightSeeker;
   
   //run methods
   strategyMethods[1][0] = RunStrategyBlinker;
-  strategyMethods[1][1] = RunStrategyTest;//RunStrategyLightSeeker;
-  //strategyMethods[1][2] = Dummy;
+  strategyMethods[1][1] = RunStrategyTest;
+  strategyMethods[1][2] = RunStrategyLightSeeker;
   
   //finish methods
   strategyMethods[2][0] = FinishStrategyBlinker;
-  strategyMethods[2][1] = FinishStrategyTest;//FinishStrategyLightSeeker;
-  //strategyMethods[2][2] = Dummy;
+  strategyMethods[2][1] = FinishStrategyTest;
+  strategyMethods[2][2] = FinishStrategyLightSeeker;
 }
 
 //loops through button-selectable modes. Triggered by button interrupt

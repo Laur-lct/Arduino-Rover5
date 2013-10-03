@@ -26,12 +26,12 @@ void RunStrategyTest() {
   int curDistUS;
   GetDistanceUSandIR(&curDistIR,&curDistUS);
   int curDist = min(curDistIR, curDistUS);
-  DBG_ONLY(Serial.print("Pan angle = dist IR/US:\t"));
-  DBG_ONLY(Serial.print((int)currentPan));
-  DBG_ONLY(Serial.print(" = "));
-  DBG_ONLY(Serial.print(curDistIR));
-  DBG_ONLY(Serial.print("/"));
-  DBG_ONLY(Serial.println(curDistUS));
+  //DBG_ONLY(Serial.print("Pan angle = dist IR/US:\t"));
+  //DBG_ONLY(Serial.print((int)currentPan));
+  //DBG_ONLY(Serial.print(" = "));
+  //DBG_ONLY(Serial.print(curDistIR));
+  //DBG_ONLY(Serial.print("/"));
+  //DBG_ONLY(Serial.println(curDistUS));
   if (curDist < minDistTreshold){
     if(aboveTresholdSerie>3 && maxDist < distTotal/aboveTresholdSerie){
       maxDist = distTotal/aboveTresholdSerie;
@@ -106,7 +106,7 @@ void RunStrategyTest() {
     }
   }
   
-  if (cntr<2000)
+  if (cntr<50)
     cntr++;
   else   
     SetMode(0);
