@@ -73,7 +73,7 @@ int IRrawToCm(int raw){
 void InitIRSensor(){
   //DBG_ONLY(Serial.println("IR cache:"));
   for(int i=0; i<16; i++){
-    milestoneIR[i] = (int)(((EEPROM.read(MEMADDR_IRCACHE_START + i*2) << 0) & 0xFF) + ((EEPROM.read(MEMADDR_IRCACHE_START + i*2 + 1) << 8) & 0xFF00));
+    milestoneIR[i] = EEPROM_READ_INT (MEMADDR_IRCACHE_START + i*2);
     //DBG_ONLY(Serial.print(milestoneIR[i]));
     //DBG_ONLY(Serial.print(' '));
   }

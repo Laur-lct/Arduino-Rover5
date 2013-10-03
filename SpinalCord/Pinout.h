@@ -2,9 +2,6 @@
 // Naming pattern (all uppercase):
 // P + <I:input, A:analog input, O:output, P:pwm output>_ + <general part name> + _ + <purpose> + _ + <where applicable: left, right, top, bottom, position etc...>
 
-#define PO_BLUETOOTH_TX 10  // TX
-#define PI_BLUETOOTH_RX 11  // RX
-
 #define PI_BUTTON_MODE 2
 #define PP_LED_STATUS_1 13
 #define PP_LED_STATUS_2 3
@@ -23,6 +20,11 @@
 #define PP_MOTOR_SPD_TR 7
 #define PP_MOTOR_SPD_BL 4
 #define PP_MOTOR_SPD_BR 6
+
+#define PA_MOTOR_CURRENT_TL A2
+#define PA_MOTOR_CURRENT_TR A0
+#define PA_MOTOR_CURRENT_BR A1
+#define PA_MOTOR_CURRENT_BL A3 
 
 #define PA_BATT_CURRENT A4
 #define PA_BATT_VOLTAGE A5

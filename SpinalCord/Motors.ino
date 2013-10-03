@@ -1,5 +1,6 @@
 boolean isMoving = false;
 boolean isCalibrationEnabled=true;
+boolean isCurrentMeasurementEnabled=false;
 int timerTickCntr=0;
 // all array indexes in clockwise order: TL, TR, BR, BL
 byte desiredPowerPercent[4] = {0,0,0,0};
@@ -7,7 +8,7 @@ byte desiredPowerAbs[4] = {0,0,0,0};
 byte realPowerAbs[4] = {0,0,0,0};
 boolean isDirectionForward[4] = {0,0,0,0};
 byte encoderPrevState[4] = {0,0,0,0};
-
+int currentDraw[4] = {0,0,0,0};
 unsigned int currentSpeedAbs[4] = {0,0,0,0};
 
 // total encoder ticks since start moving
@@ -23,11 +24,16 @@ void InitEncoders(){
   totalEncoderValue[2] =0;
   totalEncoderValue[3] =0;
   stopAtEncoderValue=0;
+  stopAtAngle=1000;
   calibrationEncoderValue[0] =0;
   calibrationEncoderValue[1] =0;
   calibrationEncoderValue[2] =0;
   calibrationEncoderValue[3] =0;
-  timerTickCntr=-200;
+  currentDraw[0]=0;
+  currentDraw[1]=0;
+  currentDraw[2]=0;
+  currentDraw[3]=0;
+  timerTickCntr=-200; // no sense to run motor calibration from the very start
   Timer1.initialize(MOTOR_TIMER_INTERVAL);
   Timer1.attachInterrupt(TimerInterruptHandler); // attach the service routine here
 }
@@ -74,9 +80,25 @@ void TimerInterruptHandler() {
     if (isCalibrationEnabled)
       CalibrateMotors();
   }
-  else 
+  else {
     timerTickCntr++;
-  if (stopAtEncoderValue>0){
+    //if enabled, take motor current draw measurements. Each analogRead takes about 100 microseconds, so take measurements part by part.
+    if (isCurrentMeasurementEnabled){
+      if (timerTickCntr == MOTOR_CALIBRATION_TICK/4)
+        currentDraw[0] = (analogRead(PA_MOTOR_CURRENT_TL) + analogRead(PA_MOTOR_CURRENT_TL))/2;
+      else if (timerTickCntr == MOTOR_CALIBRATION_TICK/4 + 2)
+        currentDraw[1] = (analogRead(PA_MOTOR_CURRENT_TR) + analogRead(PA_MOTOR_CURRENT_TR))/2;
+      else if (timerTickCntr == MOTOR_CALIBRATION_TICK/4 + 4)
+        currentDraw[2] = (analogRead(PA_MOTOR_CURRENT_BR) + analogRead(PA_MOTOR_CURRENT_BR))/2;
+      else if (timerTickCntr == MOTOR_CALIBRATION_TICK/4 + 6)
+        currentDraw[3] = (analogRead(PA_MOTOR_CURRENT_BL) + analogRead(PA_MOTOR_CURRENT_BL))/2;
+    }
+  }
+  if (stopAtAngle!=1000 && isCompassEnabled){
+    if ((int)currentRobotAngle-stopAtAngle<=2 || (int)currentRobotAngle-stopAtAngle>=-2)
+      StopMoving();
+  }
+  else if (stopAtEncoderValue>0){
     long diff =  stopAtEncoderValue*4 - (totalEncoderValue[0]+totalEncoderValue[1]+totalEncoderValue[2]+totalEncoderValue[3]);
     if (diff<5)
       StopMoving();
@@ -88,8 +110,6 @@ void TimerInterruptHandler() {
       analogWrite(PP_MOTOR_SPD_BL,25);
     }
   }
-  //else if (stopAtAngle!=1000){
-  //}
 }
 
 void MoveWheels(byte wheelDirections, byte powerPercentTL, byte powerPercentTR, byte powerPercentBR, byte powerPercentBL) {
@@ -157,18 +177,21 @@ void MoveWheels(byte wheelDirections, byte powerPercentTL, byte powerPercentTR, 
 void TurnLeft(byte powerPercent, unsigned int deltaDegrees, boolean delayWhileMoving) {
   MoveWheels(BINARY_CODE_TR | BINARY_CODE_BR, powerPercent, powerPercent, powerPercent, powerPercent);
   if (deltaDegrees){
+    if (isCompassEnabled)
+      stopAtAngle = (int)currentRobotAngle - deltaDegrees;
     stopAtEncoderValue = (unsigned long)(5.35f * deltaDegrees); //ideally 3.8353  encoder ticks per degree
     while(delayWhileMoving && isMoving)
-      delay(50);
+      delay(40);
   }
 }
 
-void TurnRight(byte powerPercent, unsigned int deltaDegrees=0, boolean delayWhileMoving=false) {
+void TurnRight(byte powerPercent, unsigned int deltaDegrees, boolean delayWhileMoving) {
   MoveWheels(BINARY_CODE_TL | BINARY_CODE_BL, powerPercent, powerPercent, powerPercent, powerPercent);
   if (deltaDegrees){
+    stopAtAngle = (int)currentRobotAngle + deltaDegrees;
     stopAtEncoderValue = (unsigned long)(5.35f * deltaDegrees); //ideally 3.8353 encoder ticks per degree
     while(delayWhileMoving && isMoving)
-      delay(50);
+      delay(40);
   }
 }
 
@@ -177,7 +200,7 @@ void MoveForward(byte powerPercent, unsigned int distanceCm, boolean delayWhileM
   if (distanceCm){
     stopAtEncoderValue = (unsigned long)(16.32f * distanceCm); // encoder ticks per CM
     while(delayWhileMoving && isMoving)
-      delay(50);
+      delay(40);
   }
 }
 
@@ -186,7 +209,7 @@ void MoveBackward(byte powerPercent, unsigned int distanceCm, boolean delayWhile
   if (distanceCm){
     stopAtEncoderValue = (unsigned long)(16.32f * distanceCm); // encoder ticks per CM 
     while(delayWhileMoving && isMoving)
-      delay(50);
+      delay(40);
   }
 }
   

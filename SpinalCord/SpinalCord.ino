@@ -1,7 +1,6 @@
 //main file with entry point
 #include "Pinout.h"
 #include "Constants.h"
-#include "_sharedMethods.h"
 #include <LED.h>
 #include <EEPROM.h>
 #include <TimerOne.h>
@@ -11,6 +10,15 @@
 #include <SoftwareServo.h>
 #include <DigitalWriteFast.h>
 #include <MsTimer2.h>
+//compass stuff
+#include <ADXL345.h>
+#include <HMC58X3.h>
+#include <ITG3200.h>
+#include <FreeIMU.h>
+#include <Wire.h>
+
+#include "_sharedMethods.h"
+
 
 #include <SoftwareSerial.h>  // for bluetooth
 
@@ -39,15 +47,16 @@ void setup() {
   statusLED1->on(); //indicate serup is running
   
   DBG_ONLY(Serial.begin(38400));
-  DBG_ONLY(Serial.println("Debug mode"));
+  DEBUG_PRINTLN("Debug mode");
   
   InitModeAndModeButton();
   InitStrategyMethods();
   InitIRSensor();
+  //InitCompass();
   InitServiceInterrupt();
   CenterHead();
   delay(300);
-  //DisableHeadServos();
+  
   
   InitBluetooth();
   
@@ -64,8 +73,6 @@ void loop() {
     strategyMethods[0][mode](); // init new strategy according to the new mode value
   }
   strategyMethods[1][mode]();
-  //DBG_ONLY(Serial.print("Batt voltage="));
-  //DBG_ONLY(Serial.println(analogRead(PA_BATT_VOLTAGE)));
 }
 
 //sets pointers for strategies methods
@@ -159,8 +166,8 @@ boolean SetMode(byte newMode) {
     mode = newMode;
     isModeUpdated = true;
     EEPROM.write(MEMADDR_LASTMODE, mode);
-    DBG_ONLY(Serial.print("Mode is set to "));
-    DBG_ONLY(Serial.println(mode));
+    DEBUG_PRINT("Mode is set to ");
+    DEBUG_PRINTLN(mode);
     return true;
   }
   return false;

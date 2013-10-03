@@ -4,13 +4,18 @@
 
 // a macro that executes one line of code only if DEBUG flag is set.
 #if defined(DEBUG)
-    #define DBG_ONLY(x) (x)            
+    #define DBG_ONLY(x) (x)
+    #define DEBUG_PRINT(x) Serial.print(x)
+    #define DEBUG_PRINTLN(x) Serial.println(x)    
 #else
     #define DBG_ONLY(x) 
+    #define DEBUG_PRINT(x)
+    #define DEBUG_PRINTLN(x)
 #endif
-
+#define EEPROM_READ_INT(addr) (int)(((EEPROM.read(addr) << 0) & 0xFF) + ((EEPROM.read(addr+1) << 8) & 0xFF00))
 #define MODES_MAX 2 //currently 2 modes for two different strategies
 #define MODES_MIN_BROWSABLE 0 //minimum mode index, that could be set via mode button. 
+
 #define MODE_BLINKER 0 // genius strategy of blinking with status led 2 
 #define MODE_LIGHTSEEKER 1 // robot will try to turn to strongest light source 
 
