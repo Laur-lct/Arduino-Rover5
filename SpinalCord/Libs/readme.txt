@@ -1,1 +1,1 @@
-copy these folders to <arduino IDE folder>\libraries\
+unzip and copy these folders to <arduino IDE folder>\libraries\
