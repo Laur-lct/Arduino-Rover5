@@ -41,15 +41,12 @@ void RunStrategyLightSeeker() {
   if (cntrL > 10){
     cntrL--;
     TurnLeft(30);
-    tickCntr=0;
   }
   else if (cntrR > 10){
     cntrR--;
     TurnRight(30);
-    tickCntr=0;
   }
   else {
-    tickCntr++;
     StopMoving();
   }
   delay(100);

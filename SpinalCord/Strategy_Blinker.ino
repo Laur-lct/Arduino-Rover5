@@ -1,14 +1,16 @@
 //this is test robot strategy to show the principle.
 
 int blinkerDelay;
+int blinkerCntr;
 void StartStrategyBlinker() {
   //do all preparations here
-  DBG_ONLY(Serial.println("Strat blinker Start"));
-  DBG_ONLY(Serial.print("freeMemory()="));
-  DBG_ONLY(Serial.println(freeMemory()));
+  DEBUG_PRINTLN("Strat blinker Start");
+  DEBUG_PRINT("freeMemory()=");
+  DEBUG_PRINTLN(freeMemory());
   DBG_ONLY(delay(1000));
   //DBG_ONLY(PrintAllCache());
   blinkerDelay=250;
+  blinkerCntr=0;
   delay(20);
 }
 
@@ -33,6 +35,12 @@ void RunStrategyBlinker() {
   delay(blinkerDelay);
   statusLED2->off();
   delay(blinkerDelay);
+  
+  // turn off robot if nothing happening
+  if (blinkerCntr>1000)
+    SelfPowerOff();
+  else 
+    blinkerCntr++;
 }
 
 void FinishStrategyBlinker() {

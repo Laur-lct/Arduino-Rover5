@@ -121,6 +121,9 @@ void InitStatusLeds() {
 void InitAllPins(){
   pinMode(PI_BUTTON_MODE, INPUT);
   
+  pinMode(PO_SELF_POWEROFF, OUTPUT);
+  digitalWrite(PO_SELF_POWEROFF,LOW);
+  
   pinMode(PO_SONICSENSOR_TRIGGER, OUTPUT);
   digitalWrite(PO_SONICSENSOR_TRIGGER,LOW);
   
@@ -153,6 +156,11 @@ void InitAllPins(){
   pinMode(PI_MOTOR_ENC_BL,INPUT);
   pinMode(PI_MOTOR_ENC_BR,INPUT);
   
+}
+
+void SelfPowerOff()
+{
+  digitalWrite(PO_SELF_POWEROFF,HIGH);
 }
 
 // tries set the mode and isModeUpdated flag

@@ -3,6 +3,7 @@
 // P + <I:input, A:analog input, O:output, P:pwm output>_ + <general part name> + _ + <purpose> + _ + <where applicable: left, right, top, bottom, position etc...>
 
 #define PI_BUTTON_MODE 2
+#define PO_SELF_POWEROFF 49
 #define PP_LED_STATUS_1 13
 #define PP_LED_STATUS_2 3
 
