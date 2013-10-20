@@ -2,9 +2,9 @@
 
 void InitCompass(){
   Wire.begin();
-  delay(300);
+  delay(100);
   my3IMU.init(true); // the parameter enable or disable fast mode
-  delay(300);
+  delay(100);
   isCompassEnabled=true;
   DEBUG_PRINTLN("Compass Initialized");
 }

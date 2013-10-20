@@ -48,7 +48,7 @@ void setup() {
   InitModeAndModeButton();
   InitStrategyMethods();
   InitIRSensor();
-  //InitCompass();
+  InitCompass();
   InitServiceInterrupt();
   CenterHead();
   delay(300);
@@ -73,20 +73,22 @@ void loop() {
 
 //sets pointers for strategies methods
 void InitStrategyMethods() {
-  //start methods
-  strategyMethods[0][0] = StartStrategyBlinker;
-  strategyMethods[0][1] = StartStrategyTest;
-  strategyMethods[0][2] = StartStrategyLightSeeker;
   
-  //run methods
-  strategyMethods[1][0] = RunStrategyBlinker;
-  strategyMethods[1][1] = RunStrategyTest;
-  strategyMethods[1][2] = RunStrategyLightSeeker;
+  strategyMethods[0][MODE_BLINKER] = StartStrategyBlinker;
+  strategyMethods[1][MODE_BLINKER] = RunStrategyBlinker;
+  strategyMethods[2][MODE_BLINKER] = FinishStrategyBlinker;
   
-  //finish methods
-  strategyMethods[2][0] = FinishStrategyBlinker;
-  strategyMethods[2][1] = FinishStrategyTest;
-  strategyMethods[2][2] = FinishStrategyLightSeeker;
+  strategyMethods[0][MODE_BLINKER] = StartStrategyBlinker;
+  strategyMethods[1][MODE_BLINKER] = RunStrategyBlinker;
+  strategyMethods[2][MODE_BLINKER] = FinishStrategyBlinker;
+  
+  strategyMethods[0][MODE_TEST] = StartStrategyTest;
+  strategyMethods[1][MODE_TEST] = RunStrategyTest;
+  strategyMethods[2][MODE_TEST] = FinishStrategyTest;
+  
+  strategyMethods[0][MODE_LIGHTSEEKER] = StartStrategyLightSeeker;
+  strategyMethods[1][MODE_LIGHTSEEKER] = RunStrategyLightSeeker;
+  strategyMethods[2][MODE_LIGHTSEEKER] = FinishStrategyLightSeeker;
 }
 
 //loops through button-selectable modes. Triggered by button interrupt

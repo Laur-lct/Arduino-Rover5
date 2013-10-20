@@ -18,7 +18,8 @@ void RunStrategyBlinker() {
   statusLED2->setValue(1);
   //DBG_ONLY(Serial.println("blinking..."));
   //DBG_ONLY(Serial.print("Batt voltage="));
-  
+  my3IMU.getValues(rawCompassVals);
+  CalculateHeadingTiltCompensated(rawCompassVals);
   /*DBG_ONLY(Serial.print("Batt voltage="));
   DBG_ONLY(Serial.println(currVoltage));
   DBG_ONLY(Serial.print("current draw="));

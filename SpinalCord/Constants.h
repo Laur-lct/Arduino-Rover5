@@ -13,11 +13,13 @@
     #define DEBUG_PRINTLN(x)
 #endif
 #define EEPROM_READ_INT(addr) (int)(((EEPROM.read(addr) << 0) & 0xFF) + ((EEPROM.read(addr+1) << 8) & 0xFF00))
-#define MODES_MAX 3 //currently 2 modes for two different strategies
-#define MODES_MIN_BROWSABLE 0 //minimum mode index, that could be set via mode button. 
+#define MODES_MAX 4 //total number of modes
+#define MODES_MIN_BROWSABLE 1 //minimum mode index, that could be set via mode button. 
 
-#define MODE_BLINKER 0 // genius strategy of blinking with status led 2 
-#define MODE_LIGHTSEEKER 2 // robot will try to turn to strongest light source 
+#define MODE_FREEIMU_CALIB 0 //compass calibration mode
+#define MODE_BLINKER 1 // genius strategy of blinking with status led 2 
+#define MODE_LIGHTSEEKER 2 // robot will try to turn to strongest light source
+#define MODE_TEST 3
 
 //indicates correct forward direction flag for each shaft.
 #define MOTOR_FWD_T 0
@@ -45,13 +47,18 @@
 #define HEAD_REL_TILT_MAX HEAD_ABS_TILT_MAX - HEAD_TILT_CENTER
 #define HEAD_REL_TILT_MIN HEAD_ABS_TILT_MAX - HEAD_TILT_CENTER
 
+//freeimu signature number !important - this constant is also in Freeimu.cpp
+#define FREEIMU_EEPROM_SIGNATURE 0x19
+
 //here go all EEPROM memory addresses
 #define MEMADDR_LASTMODE 0
 // motor calibration cache
 #define MEMADDR_MOTORCACHE_START 1 
 #define MEMADDR_MOTORCACHE_END MEMADDR_MOTORCACHE_START + 160
-
+// analog IR cache
 #define MEMADDR_IRCACHE_START MEMADDR_MOTORCACHE_END
 #define MEMADDR_IRCACHE_END MEMADDR_IRCACHE_START + 32
-
+// compass and accelerometer cache
+#define MEMADDR_FREEIMU_START MEMADDR_IRCACHE_END //!important - this constant is also in Freeimu.cpp
+#define MEMADDR_FREEIMU_END MEMADDR_FREEIMU_START + 32 + 1 + 7  //32 bytes for values , 1 for signature, 7 empty space
 

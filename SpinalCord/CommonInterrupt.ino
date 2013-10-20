@@ -27,6 +27,10 @@ void InitServiceInterrupt(){
   MsTimer2::start();
 }
 
+void DeactivateCommonInterrupt(){
+  MsTimer2::stop();
+}
+
 void ServiceTimerRoutine(){
   //servo control
   SoftwareServo::refresh();
