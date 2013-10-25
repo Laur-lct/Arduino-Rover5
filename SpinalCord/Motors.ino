@@ -12,8 +12,8 @@ int currentDraw[4] = {0,0,0,0};
 unsigned int currentSpeedAbs[4] = {0,0,0,0};
 
 // total encoder ticks since start moving
-unsigned long totalEncoderValue[4] = {0,0,0,0};
-unsigned int calibrationEncoderValue[4] = {0,0,0,0};
+unsigned long totalEncoderValue[4] = {0};
+unsigned int calibrationEncoderValue[4] = {0};
 byte lastDirectionsByte;
 unsigned long stopAtEncoderValue=0;
 int stopAtAngle = 1000;

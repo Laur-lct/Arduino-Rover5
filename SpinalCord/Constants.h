@@ -14,7 +14,11 @@
 #endif
 #define EEPROM_READ_INT(addr) (int)(((EEPROM.read(addr) << 0) & 0xFF) + ((EEPROM.read(addr+1) << 8) & 0xFF00))
 #define MODES_MAX 4 //total number of modes
-#define MODES_MIN_BROWSABLE 1 //minimum mode index, that could be set via mode button. 
+#define MODES_MIN_BROWSABLE 1 //minimum mode index, that could be set via mode button.
+
+#define BT_NAME "Rover5"
+#define BT_CODE 7463
+#define BT_COM_BUFFER_SIZE 10
 
 #define MODE_FREEIMU_CALIB 0 //compass calibration mode
 #define MODE_BLINKER 1 // genius strategy of blinking with status led 2 
@@ -60,5 +64,5 @@
 #define MEMADDR_IRCACHE_END MEMADDR_IRCACHE_START + 32
 // compass and accelerometer cache
 #define MEMADDR_FREEIMU_START MEMADDR_IRCACHE_END //!important - this constant is also in Freeimu.cpp
-#define MEMADDR_FREEIMU_END MEMADDR_FREEIMU_START + 32 + 1 + 7  //32 bytes for values , 1 for signature, 7 empty space
+#define MEMADDR_FREEIMU_END MEMADDR_FREEIMU_START + 36 + 1 + 3  //36 bytes for values , 1 for signature, 3 empty space
 

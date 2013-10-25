@@ -49,6 +49,7 @@ void setup() {
   InitStrategyMethods();
   InitIRSensor();
   InitCompass();
+  InitBluetooth();
   InitServiceInterrupt();
   CenterHead();
   delay(300);
@@ -74,9 +75,9 @@ void loop() {
 //sets pointers for strategies methods
 void InitStrategyMethods() {
   
-  strategyMethods[0][MODE_BLINKER] = StartStrategyBlinker;
-  strategyMethods[1][MODE_BLINKER] = RunStrategyBlinker;
-  strategyMethods[2][MODE_BLINKER] = FinishStrategyBlinker;
+  strategyMethods[0][MODE_FREEIMU_CALIB] = StartFreeimuCalib;
+  strategyMethods[1][MODE_FREEIMU_CALIB] = RunFreeimuCalib;
+  strategyMethods[2][MODE_FREEIMU_CALIB] = FinishFreeimuCalib;
   
   strategyMethods[0][MODE_BLINKER] = StartStrategyBlinker;
   strategyMethods[1][MODE_BLINKER] = RunStrategyBlinker;
@@ -157,7 +158,6 @@ void InitAllPins(){
   pinMode(PI_MOTOR_ENC_TR,INPUT);
   pinMode(PI_MOTOR_ENC_BL,INPUT);
   pinMode(PI_MOTOR_ENC_BR,INPUT);
-  
 }
 
 void SelfPowerOff()

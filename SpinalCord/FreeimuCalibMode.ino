@@ -4,8 +4,10 @@
 
 void StartFreeimuCalib() {
   DeactivateCommonInterrupt();
-  Serial2.begin(115200);
+  InitBluetooth(115200);
   InitCompass();
+  statusLED1->on();
+  statusLED2->on();
 }
 
 void writeArr(void * varr, uint8_t arr_length, uint8_t type_bytes) {
@@ -169,4 +171,6 @@ char serial_busy_wait() {
 
 void FinishFreeimuCalib() {
   InitServiceInterrupt();
+  statusLED1->off();
+  statusLED2->off();
 }
