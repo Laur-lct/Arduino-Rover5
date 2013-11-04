@@ -12,8 +12,8 @@ int currentDraw[4] = {0,0,0,0};
 unsigned int currentSpeedAbs[4] = {0,0,0,0};
 
 // total encoder ticks since start moving
-unsigned long totalEncoderValue[4] = {0};
-unsigned int calibrationEncoderValue[4] = {0};
+unsigned long totalEncoderValue[4] = {0,0,0,0};
+unsigned int calibrationEncoderValue[4] = {0,0,0,0};
 byte lastDirectionsByte;
 unsigned long stopAtEncoderValue=0;
 int stopAtAngle = 1000;
@@ -179,37 +179,38 @@ void TurnLeft(byte powerPercent, unsigned int deltaDegrees, boolean delayWhileMo
   if (deltaDegrees){
     if (isCompassEnabled)
       stopAtAngle = (int)currentRobotAngle - deltaDegrees;
-    stopAtEncoderValue = (unsigned long)(5.35f * deltaDegrees); //ideally 3.8353  encoder ticks per degree
+    stopAtEncoderValue = totalEncoderValue[0] + (unsigned long)(5.35f * deltaDegrees); //ideally 3.8353  encoder ticks per degree
     while(delayWhileMoving && isMoving)
-      delay(40);
+      delay(20);
   }
 }
 
 void TurnRight(byte powerPercent, unsigned int deltaDegrees, boolean delayWhileMoving) {
   MoveWheels(BINARY_CODE_TL | BINARY_CODE_BL, powerPercent, powerPercent, powerPercent, powerPercent);
   if (deltaDegrees){
-    stopAtAngle = (int)currentRobotAngle + deltaDegrees;
-    stopAtEncoderValue = (unsigned long)(5.35f * deltaDegrees); //ideally 3.8353 encoder ticks per degree
+    if (isCompassEnabled)
+      stopAtAngle = (int)currentRobotAngle + deltaDegrees;
+    stopAtEncoderValue = totalEncoderValue[0] + (unsigned long)(5.35f * deltaDegrees); //ideally 3.8353 encoder ticks per degree
     while(delayWhileMoving && isMoving)
-      delay(40);
+      delay(20);
   }
 }
 
 void MoveForward(byte powerPercent, unsigned int distanceCm, boolean delayWhileMoving) {
   MoveWheels(BINARY_CODE_TL | BINARY_CODE_TR | BINARY_CODE_BL | BINARY_CODE_BR, powerPercent, powerPercent, powerPercent, powerPercent);
   if (distanceCm){
-    stopAtEncoderValue = (unsigned long)(16.32f * distanceCm); // encoder ticks per CM
+    stopAtEncoderValue = totalEncoderValue[0] + (unsigned long)(16.32f * distanceCm); // encoder ticks per CM
     while(delayWhileMoving && isMoving)
-      delay(40);
+      delay(20);
   }
 }
 
 void MoveBackward(byte powerPercent, unsigned int distanceCm, boolean delayWhileMoving) {
   MoveWheels(0, powerPercent, powerPercent, powerPercent, powerPercent);
   if (distanceCm){
-    stopAtEncoderValue = (unsigned long)(16.32f * distanceCm); // encoder ticks per CM 
+    stopAtEncoderValue = totalEncoderValue[0] + (unsigned long)(16.32f * distanceCm); // encoder ticks per CM 
     while(delayWhileMoving && isMoving)
-      delay(40);
+      delay(20);
   }
 }
   
@@ -222,7 +223,6 @@ void CalibrateMotors(){
   Timer1.detachInterrupt();
   //DBG_ONLY(Serial.println("Calibrating..."));
   boolean changed=false;
-  
   //sides
   changed |= SyncMotorPair(3, 0); // TL and BL
   changed |= SyncMotorPair(1, 2); // TR and BR
@@ -239,10 +239,10 @@ void CalibrateMotors(){
     realPowerAbs[2]++;
     realPowerAbs[3]++;
   }
-  else if (desiredPowerAbs[0] < 251 && realPowerAbs[0] > desiredPowerAbs[0] + 5 && 
-           desiredPowerAbs[1] < 251 && realPowerAbs[1] > desiredPowerAbs[1] + 5 && 
-           desiredPowerAbs[2] < 251 && realPowerAbs[2] > desiredPowerAbs[2] + 5 && 
-           desiredPowerAbs[3] < 251 && realPowerAbs[3] > desiredPowerAbs[3] + 5) {
+  else if (desiredPowerAbs[0] < 251 && realPowerAbs[0] > desiredPowerAbs[0] + 3 && 
+           desiredPowerAbs[1] < 251 && realPowerAbs[1] > desiredPowerAbs[1] + 3 && 
+           desiredPowerAbs[2] < 251 && realPowerAbs[2] > desiredPowerAbs[2] + 3 && 
+           desiredPowerAbs[3] < 251 && realPowerAbs[3] > desiredPowerAbs[3] + 3) {
     realPowerAbs[0]--;
     realPowerAbs[1]--;
     realPowerAbs[2]--;
@@ -273,8 +273,11 @@ boolean SyncMotorPair(byte motorIndex1, byte motorIndex2){
   char absDiff1 = realPowerAbs[motorIndex1] - desiredPowerAbs[motorIndex1];
   char absDiff2 = realPowerAbs[motorIndex2] - desiredPowerAbs[motorIndex2];
   boolean isSameSign = (absDiff1 ^ absDiff2) >= 0;
+
+  //DEBUG_PRINT(ratioDiff);
+  //DEBUG_PRINT('\t');
   //motorIndex1 speed compared to motorIndex2 speed is slower then desired
-  if (ratioDiff < 0.01){
+  if (ratioDiff < -0.2f){
     // here we have two options - either speed up motorIndex1 or slow down motorIndex2.
     // we choose that change, which will keep overall real power closer to desired value
     // e. g. any motor will always try to keep its power as close to desired as possible.
@@ -285,7 +288,7 @@ boolean SyncMotorPair(byte motorIndex1, byte motorIndex2){
     return true;
   }
   //motorIndex1 speed compared to motorIndex2 speed is faster then desired
-  else if (ratioDiff > 0.01){
+  else if (ratioDiff > 0.02f){
     // same two options - either slow down motorIndex1 or speed up motorIndex2.
     if (realPowerAbs[motorIndex2] == 255 || (isSameSign && absDiff1 <= absDiff2) || (!isSameSign && absDiff1 >= absDiff2))
       realPowerAbs[motorIndex1]--;
@@ -303,7 +306,7 @@ void DropMotorCache() {
 
 #if defined(DEBUG)
 void PrintMotorCache(){
-  for (int i = 0; i<160; i++){
+  for (int i = 0; i<MEMADDR_MOTORCACHE_END - MEMADDR_MOTORCACHE_START; i++){
     if (i%8==0) {
       Serial.println();
       Serial.print("Iter ");
