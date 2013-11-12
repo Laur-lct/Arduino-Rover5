@@ -64,9 +64,10 @@ void RunStrategyTest() {
         delta=(currentPan <=0 ? -10 : 10);
         delay(140);
       }
-      else if (abs(delta)==15 && aboveTresholdSerie>=3 && !isMoving)
-          //DBG_ONLY(Serial.println("No obstacles. fwd"));
+      else if (abs(delta)==15 && aboveTresholdSerie>=3 && !isMoving){
+          DBG_ONLY(Serial.println("No obstacles. fwd"));
           MoveForward(30);
+      }
       else if (abs(delta)==10){
         if(aboveTresholdSerie>3 && maxDist < distTotal/aboveTresholdSerie){
           maxDist = distTotal/aboveTresholdSerie;
@@ -77,24 +78,25 @@ void RunStrategyTest() {
         DBG_ONLY(Serial.print(" / "));
         DBG_ONLY(Serial.println(maxDist));
         DBG_ONLY(Serial.println("Decision:"));
-        if (maxDist< 40)
-          //DBG_ONLY(Serial.println("Dead end. Turning right"));
+        if (maxDist< 40){
+          DBG_ONLY(Serial.println("Dead end. Turning right"));
           TurnRight(30,90,true);
+        }
         else if (maxDistPan < 19 && maxDistPan > -19){
-          //DBG_ONLY(Serial.println("Fwd"));
+          DBG_ONLY(Serial.println("Fwd"));
           MoveForward(30);
           SetHeadPan(currentPan <=0 ? -15 : 15);
           delta=(currentPan <=0 ? -15 : 15);
           delay(140);
         }
         else if (maxDistPan < 0){
-          //DBG_ONLY(Serial.println("Left"));
+          DBG_ONLY(Serial.println("Left"));
           TurnLeft(30,abs(maxDistPan),true);
           SetHeadPan(currentPan <=0 ? -15 : 15);
           delta=(currentPan <=0 ? -15 : 15);
         }
         else{ 
-          //DBG_ONLY(Serial.println("Right"));
+          DBG_ONLY(Serial.println("Right"));
           TurnRight(30,abs(maxDistPan),true);
           SetHeadPan(currentPan <=0 ? -15 : 15);
           delta=(currentPan <=0 ? -15 : 15);
@@ -105,13 +107,12 @@ void RunStrategyTest() {
       delta = -delta;
     }
   }
-  
-  if (cntr<50)
+  if (cntr<2050)
     cntr++;
   else   
     SetMode(0);
 }
-
+float ang =  MeasureAngle();
 void FinishStrategyTest() {
   //finish stuff before end
   DBG_ONLY(Serial.println("Strategy Test finish"));

@@ -12,10 +12,6 @@ float minVoltage=10;
 
 byte isCharging=0; //the higher value, the higher probability that we're trully charging. 
 byte IRBumperValues[4];
-
-float currentRobotAngle=0;
-float deltaRobotAngle=0;
-
 int currentConsumption;
 
 void InitServiceInterrupt(){
@@ -33,8 +29,8 @@ void DeactivateCommonInterrupt(){
 
 void ServiceTimerRoutine(){
   //servo control
+  //unsigned long ms = millis();
   SoftwareServo::refresh();
-  
   commonInterruptCntr++;
   if(commonInterruptCntr%3!=0)
     return;
@@ -72,4 +68,13 @@ void ServiceTimerRoutine(){
   
   //light intensity
   
+  //compass
+  //if (isCompassEnabled) {
+  //  sei();
+  //  my3IMU.getValues(rawCompassVals);
+  //  deltaRobotAngle = currentRobotAngle;
+  //  currentRobotAngle = RadiansToDegrees(CalculateHeadingTiltCompensated(rawCompassVals));
+  //  deltaRobotAngle = currentRobotAngle - deltaRobotAngle;
+  //}
+  //DEBUG_PRINTLN(millis() - ms);
 }

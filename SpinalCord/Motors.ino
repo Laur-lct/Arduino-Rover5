@@ -16,7 +16,6 @@ unsigned long totalEncoderValue[4] = {0,0,0,0};
 unsigned int calibrationEncoderValue[4] = {0,0,0,0};
 byte lastDirectionsByte;
 unsigned long stopAtEncoderValue=0;
-int stopAtAngle = 1000;
 
 void InitEncoders(){
   totalEncoderValue[0] =0;
@@ -24,7 +23,6 @@ void InitEncoders(){
   totalEncoderValue[2] =0;
   totalEncoderValue[3] =0;
   stopAtEncoderValue=0;
-  stopAtAngle=1000;
   calibrationEncoderValue[0] =0;
   calibrationEncoderValue[1] =0;
   calibrationEncoderValue[2] =0;
@@ -94,11 +92,7 @@ void TimerInterruptHandler() {
         currentDraw[3] = (analogRead(PA_MOTOR_CURRENT_BL) + analogRead(PA_MOTOR_CURRENT_BL))/2;
     }
   }
-  if (stopAtAngle!=1000 && isCompassEnabled){
-    if ((int)currentRobotAngle-stopAtAngle<=2 || (int)currentRobotAngle-stopAtAngle>=-2)
-      StopMoving();
-  }
-  else if (stopAtEncoderValue>0){
+  if (stopAtEncoderValue>0){
     long diff =  stopAtEncoderValue*4 - (totalEncoderValue[0]+totalEncoderValue[1]+totalEncoderValue[2]+totalEncoderValue[3]);
     if (diff<5)
       StopMoving();
@@ -177,8 +171,6 @@ void MoveWheels(byte wheelDirections, byte powerPercentTL, byte powerPercentTR, 
 void TurnLeft(byte powerPercent, unsigned int deltaDegrees, boolean delayWhileMoving) {
   MoveWheels(BINARY_CODE_TR | BINARY_CODE_BR, powerPercent, powerPercent, powerPercent, powerPercent);
   if (deltaDegrees){
-    if (isCompassEnabled)
-      stopAtAngle = (int)currentRobotAngle - deltaDegrees;
     stopAtEncoderValue = totalEncoderValue[0] + (unsigned long)(5.35f * deltaDegrees); //ideally 3.8353  encoder ticks per degree
     while(delayWhileMoving && isMoving)
       delay(20);
@@ -188,8 +180,6 @@ void TurnLeft(byte powerPercent, unsigned int deltaDegrees, boolean delayWhileMo
 void TurnRight(byte powerPercent, unsigned int deltaDegrees, boolean delayWhileMoving) {
   MoveWheels(BINARY_CODE_TL | BINARY_CODE_BL, powerPercent, powerPercent, powerPercent, powerPercent);
   if (deltaDegrees){
-    if (isCompassEnabled)
-      stopAtAngle = (int)currentRobotAngle + deltaDegrees;
     stopAtEncoderValue = totalEncoderValue[0] + (unsigned long)(5.35f * deltaDegrees); //ideally 3.8353 encoder ticks per degree
     while(delayWhileMoving && isMoving)
       delay(20);

@@ -44,7 +44,6 @@ void setup() {
   
   DBG_ONLY(Serial.begin(38400));
   DEBUG_PRINTLN("Debug mode");
-  
   InitModeAndModeButton();
   InitStrategyMethods();
   InitIRSensor();
@@ -53,10 +52,7 @@ void setup() {
   InitServiceInterrupt();
   CenterHead();
   delay(300);
-  
-  
-  InitBluetooth();
-  
+  //mode=0;
   //setup finished
   statusLED1->off();
 }

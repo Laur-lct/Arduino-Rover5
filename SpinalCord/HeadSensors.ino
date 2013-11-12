@@ -191,28 +191,28 @@ void GetDistanceUSandIR (int *distIR, int *distUS, byte triesLeft=3){
   long total=0;
   confidenceIR=0;
   confidenceUS=0;
-  DBG_ONLY(Serial.print("IR raws: ")); 
+  //DBG_ONLY(Serial.print("IR raws: ")); 
   for (char i=0; i<=lastMeasureIdxIR; i++){
-    DBG_ONLY(Serial.print(rawsIR[i]));
-    DBG_ONLY(Serial.print(" "));
+    //DBG_ONLY(Serial.print(rawsIR[i]));
+    //DBG_ONLY(Serial.print(" "));
     if (rawsIR[candidateIndexIR]-rawsIR[i] > -maxDiffIR && rawsIR[candidateIndexIR]-rawsIR[i] < maxDiffIR){
       confidenceIR++;
       total+=rawsIR[i];
     }
   }
-  DBG_ONLY(Serial.println());
+  //DBG_ONLY(Serial.println());
   *distIR = IRrawToCm((int)(total/confidenceIR));
   total=0;
-  DBG_ONLY(Serial.print("US raws: ")); 
+  //DBG_ONLY(Serial.print("US raws: ")); 
   for (char i=0; i<=lastMeasureIdxUS; i++){
-    DBG_ONLY(Serial.print(rawsUS[i]));
-    DBG_ONLY(Serial.print(" "));
+    //DBG_ONLY(Serial.print(rawsUS[i]));
+    //DBG_ONLY(Serial.print(" "));
     if (rawsUS[i] > 60 && rawsUS[candidateIndexUS]-rawsUS[i] > -maxDiffUS && rawsUS[candidateIndexUS]-rawsUS[i] < maxDiffUS){
       confidenceUS++;
       total+=rawsUS[i];
     }
   }
-  DBG_ONLY(Serial.println());
+  //DBG_ONLY(Serial.println());
   *distUS = microsecondsToCentimeters((int)(total/confidenceUS));
   if (!(confidenceIR > 5/2 && confidenceUS > 5/2) && triesLeft>0)
     GetDistanceUSandIR(distIR, distUS, --triesLeft);

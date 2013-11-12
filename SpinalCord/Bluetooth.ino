@@ -28,9 +28,9 @@ void InitBluetooth(unsigned long baudRate){
     str[7] = 48 + brNum; //asci code
     for (byte i=8; i>0; i--){
       Serial2.begin(FlagToBaud(i));
-      delay(2);
+      delay(10);
       Serial2.write(str);
-      delay(5);
+      delay(10);
       if (Serial2.available()>0) break;
     }
   }

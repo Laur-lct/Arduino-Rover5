@@ -8,7 +8,6 @@ void StartStrategyBlinker() {
   DEBUG_PRINT("freeMemory()=");
   DEBUG_PRINTLN(freeMemory());
   DBG_ONLY(delay(1000));
-  //DBG_ONLY(PrintAllCache());
   blinkerDelay=250;
   blinkerCntr=0;
   delay(20);
@@ -18,10 +17,12 @@ void RunStrategyBlinker() {
   statusLED2->setValue(1);
   //DBG_ONLY(Serial.println("blinking..."));
   //DBG_ONLY(Serial.print("Batt voltage="));
+  //unsigned long ms = millis();
   //my3IMU.getValues(rawCompassVals);
-  //CalculateHeadingTiltCompensated(rawCompassVals);
-  /*DBG_ONLY(Serial.print("Batt voltage="));
-  DBG_ONLY(Serial.println(currVoltage));
+  //RadiansToDegrees(CalculateHeadingTiltCompensated(rawCompassVals));
+  //DEBUG_PRINTLN(millis() - ms);
+  //DBG_ONLY(Serial.print("Batt voltage="));
+  /*DBG_ONLY(Serial.println(currVoltage));
   DBG_ONLY(Serial.print("current draw="));
   DBG_ONLY(Serial.println(currentConsumption));
   DBG_ONLY(Serial.print("currentDraw = "));
