@@ -49,16 +49,16 @@ void ServiceTimerRoutine(){
   //ir bumper
   if(digitalReadFast(PO_IRBUMPER_SWITCH)){
     
-    if(!digitalReadFast(PI_IRBUMPER_TL)){ if (IRBumperValues[0]<255) IRBumperValues[0]++;}
+    if(!digitalReadFast(PI_IRBUMPER_TL)){ if (IRBumperValues[0]<50) IRBumperValues[0]++;}
     else if (IRBumperValues[0]>0) IRBumperValues[0]--;
     
-    if(!digitalReadFast(PI_IRBUMPER_TR)){if (IRBumperValues[1]<255) IRBumperValues[1]++;}
+    if(!digitalReadFast(PI_IRBUMPER_TR)){if (IRBumperValues[1]<50) IRBumperValues[1]++;}
     else if (IRBumperValues[1]>0) IRBumperValues[1]--;
     
-    if(!digitalReadFast(PI_IRBUMPER_BR)){if (IRBumperValues[2]<255) IRBumperValues[2]++;}
+    if(!digitalReadFast(PI_IRBUMPER_BR)){if (IRBumperValues[2]<50) IRBumperValues[2]++;}
     else if (IRBumperValues[2]>0) IRBumperValues[2]--;
     
-    if(!digitalReadFast(PI_IRBUMPER_BL)){if (IRBumperValues[3]<255) IRBumperValues[3]++;}
+    if(!digitalReadFast(PI_IRBUMPER_BL)){if (IRBumperValues[3]<50) IRBumperValues[3]++;}
     else if (IRBumperValues[3]>0) IRBumperValues[3]--;
   }
   

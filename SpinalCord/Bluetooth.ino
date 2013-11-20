@@ -1,6 +1,12 @@
 //all bluetooth related functions will go here
 unsigned long btBaudRate=38400;
-byte btStatus=0; // 0 - non initialized; 1 - initialized; 2 - connected; 3 - error
+byte btStatus=0; // 0 - non initialized or disabled; 1 - initialized; 2 - connected; 3 - error
+
+unsigned long lastBtMillis;
+unsigned long lastBtReceiveMillis;
+byte isPacketStarted=false;
+byte receivedData[64];
+byte receivedDataIdx=0;
 
 struct BtCommand {
   byte commandNumber;
@@ -40,7 +46,7 @@ void InitBluetooth(unsigned long baudRate){
     DEBUG_PRINT((char)brNum);
     btStatus=1;
   }
-  DEBUG_PRINTLN();
+  DEBUG_PRINTLN(btStatus);
   Serial2.begin(btBaudRate);
   
 }
@@ -84,4 +90,97 @@ void BtSetNameAndPass(char *btName, unsigned int btCode){
   delay(10);
   while(Serial2.available())
     Serial2.read();
+}
+
+void ProcessBLuetooth(){
+  //error or disabled
+  if (btStatus==0 || btStatus==3)
+    return;
+  lastBtMillis=millis();
+  ParseReceived();
+  unsigned long deltaMillis = lastBtMillis-lastBtReceiveMillis;
+  if (deltaMillis > 3*BT_PING_INTERVAL)
+    btStatus=1;
+  else if (deltaMillis > BT_PING_INTERVAL)
+    SendServiceCommand(0,0);
+  else {
+    btStatus=2;
+    SendCommands();
+  }
+}
+
+void ParseReceived(){
+  if (!Serial2.available())
+    return;
+
+  //clear old data in the buffer
+  if (receivedDataIdx > 0  && lastBtMillis-lastBtReceiveMillis > 1000){
+    receivedDataIdx=0;
+    isPacketStarted=false;
+  }
+  lastBtReceiveMillis = lastBtMillis;
+  // service paket syntax <!commandNumber,1 byte of data!>
+  // commandNumber 0-10 are service commands, others are regular:
+  // regular paket syntax <!commandNumber,pktNumber,isResponceFlag,6argsLength,data!>
+  boolean startEncountered = false;
+  boolean endEncountered = false;
+  while (Serial2.available()){
+    receivedData[receivedDataIdx] = (char)Serial2.read();
+    //check for for package start
+    if (receivedDataIdx > 1 
+        && receivedData[receivedDataIdx]==BT_START_DELIMITER[2] 
+        && receivedData[receivedDataIdx-1]==BT_START_DELIMITER[1] 
+        && receivedData[receivedDataIdx-2]==BT_START_DELIMITER[0]){
+      startEncountered = true;
+      if (!isPacketStarted) isPacketStarted=true;
+    }
+    else if (receivedDataIdx > 1
+       && receivedData[receivedDataIdx]==BT_END_DELIMITER[2]
+       && receivedData[receivedDataIdx-1]==BT_START_DELIMITER[1] 
+       && receivedData[receivedDataIdx-2]==BT_END_DELIMITER[0])
+      endEncountered =true;
+      
+    if (!isPacketStarted){
+      //ignore anything except of start delimiter
+      if ((receivedDataIdx==0 && receivedData[receivedDataIdx]==BT_START_DELIMITER[0]) || (receivedDataIdx==1 && receivedData[receivedDataIdx]==BT_START_DELIMITER[1]))
+        receivedDataIdx++;
+      else 
+        receivedDataIdx=0;
+    }
+    else {
+      // found start more than once
+      if (startEncountered)
+        receivedDataIdx=3; //delim length
+      // receive packet data
+      else if (!endEncountered)
+        receivedDataIdx++;
+      // parse packet
+      else {
+        PacketToCommand();     
+        receivedDataIdx=0;
+        isPacketStarted=false;
+      }
+    }
+  }
+}
+void PacketToCommand(byte *buffer, byte len){
+  if (len<3+3+2) //minimal possible length
+    return;
+  
+  //service packet
+  if (len<3+3+6){ 
+    if (buffer[3]<)
+  }
+  //byte estimatedPacketLength;
+  
+}
+void SendServiceCommand(byte commandNumber, byte argument){
+  byte out[6] = {BT_START_DELIMITER[0],BT_START_DELIMITER[1],commandNumber,argument,BT_END_DELIMITER[0],BT_END_DELIMITER[1]};
+  Serial2.write(out,6);
+}
+void SendCommands(){
+}
+
+struct BtCommand* GetCommandPlace(BtCommand* buffer, byte bufLen){
+  return btOutputBuffer;
 }

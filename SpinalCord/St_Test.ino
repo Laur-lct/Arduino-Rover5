@@ -112,8 +112,8 @@ void RunStrategyTest() {
   else   
     SetMode(0);
 }
-float ang =  MeasureAngle();
 void FinishStrategyTest() {
+  float ang =  MeasureAngle();
   //finish stuff before end
   DBG_ONLY(Serial.println("Strategy Test finish"));
   

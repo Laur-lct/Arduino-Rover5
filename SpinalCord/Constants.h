@@ -19,6 +19,10 @@
 #define BT_NAME "Rover5"
 #define BT_CODE 7463
 #define BT_COM_BUFFER_SIZE 10
+#define BT_START_DELIMITER "<!!"
+#define BT_END_DELIMITER "!!>"
+#define BT_PING_INTERVAL 500 //milliseconds
+
 
 #define MODE_FREEIMU_CALIB 0 //compass calibration mode
 #define MODE_BLINKER 1 // genius strategy of blinking with status led 2 

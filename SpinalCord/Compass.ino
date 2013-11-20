@@ -52,7 +52,7 @@ float RadiansToDegrees(float rads){
   return rads * 180/PI;
 }
 
-float MeasureAngle(byte triesLeft=3){
+float MeasureAngle(/*byte triesLeft=3*/){
   float raws[7];
   const float maxDiff = 0.02f;
   // the idea of filtering algorithm well explained here:   http://habrahabr.ru/post/167177/
@@ -88,7 +88,7 @@ float MeasureAngle(byte triesLeft=3){
     }
   }
   //DBG_ONLY(Serial.println());  
-  if (confidence > 7/2 || triesLeft==0)
+  //if (confidence > 7/2 || triesLeft==0)
     return RadiansToDegrees(total/confidence);
-  return MeasureAngle(--triesLeft);
+  //return MeasureAngle(--triesLeft);
 }

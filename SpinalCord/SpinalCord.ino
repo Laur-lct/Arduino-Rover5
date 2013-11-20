@@ -37,13 +37,13 @@ LED *statusLED2;
 functionPtr strategyMethods[3][MODES_MAX];
 
 void setup() {
+  DBG_ONLY(Serial.begin(38400));
+  DEBUG_PRINTLN("Debug mode. Entered setup...");
   // put your setup code here, to run once:
   InitStatusLeds();
   InitAllPins();
   statusLED1->on(); //indicate serup is running
-  
-  DBG_ONLY(Serial.begin(38400));
-  DEBUG_PRINTLN("Debug mode");
+
   InitModeAndModeButton();
   InitStrategyMethods();
   InitIRSensor();
@@ -52,7 +52,6 @@ void setup() {
   InitServiceInterrupt();
   CenterHead();
   delay(300);
-  //mode=0;
   //setup finished
   statusLED1->off();
 }

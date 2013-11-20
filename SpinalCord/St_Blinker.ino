@@ -17,13 +17,9 @@ void RunStrategyBlinker() {
   statusLED2->setValue(1);
   //DBG_ONLY(Serial.println("blinking..."));
   //DBG_ONLY(Serial.print("Batt voltage="));
-  //unsigned long ms = millis();
-  //my3IMU.getValues(rawCompassVals);
-  //RadiansToDegrees(CalculateHeadingTiltCompensated(rawCompassVals));
-  //DEBUG_PRINTLN(millis() - ms);
-  //DBG_ONLY(Serial.print("Batt voltage="));
-  /*DBG_ONLY(Serial.println(currVoltage));
-  DBG_ONLY(Serial.print("current draw="));
+  DEBUG_PRINT("Light: ");
+  DEBUG_PRINTLN(analogRead(PA_LIGHTSENSOR_R));
+  /*DBG_ONLY(Serial.print("current draw="));
   DBG_ONLY(Serial.println(currentConsumption));
   DBG_ONLY(Serial.print("currentDraw = "));
   DBG_ONLY(Serial.print(currentDraw[0]));
