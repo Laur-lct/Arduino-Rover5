@@ -65,6 +65,8 @@ void loop() {
     strategyMethods[0][mode](); // init new strategy according to the new mode value
   }
   strategyMethods[1][mode]();
+  //bluetooth receive and send
+  ProcessBluetooth();
 }
 
 //sets pointers for strategies methods

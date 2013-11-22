@@ -22,6 +22,7 @@
 #define BT_START_DELIMITER "<!!"
 #define BT_END_DELIMITER "!!>"
 #define BT_PING_INTERVAL 500 //milliseconds
+#define BT_KEEP_TTL 10 //sets how long the commands are kept in buffer since they were sent
 
 
 #define MODE_FREEIMU_CALIB 0 //compass calibration mode

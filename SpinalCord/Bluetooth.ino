@@ -4,9 +4,12 @@ byte btStatus=0; // 0 - non initialized or disabled; 1 - initialized; 2 - connec
 
 unsigned long lastBtMillis;
 unsigned long lastBtReceiveMillis;
+unsigned int globalPacketNumber=0;
 byte isPacketStarted=false;
 byte receivedData[64];
 byte receivedDataIdx=0;
+const byte startDelimLength = strlen(BT_START_DELIMITER); 
+const byte endDelimLength = strlen(BT_END_DELIMITER); 
 
 struct BtCommand {
   byte commandNumber;
@@ -17,10 +20,8 @@ struct BtCommand {
   byte args[30];
 };
 
-BtCommand btInputBuffer[BT_COM_BUFFER_SIZE] = {0};
-BtCommand btOutputBuffer[BT_COM_BUFFER_SIZE] = {0};
-byte currentInputBufIdx=0;
-byte currentOutputBufIdx=0;
+BtCommand btInputBuffer[BT_COM_BUFFER_SIZE];
+BtCommand btOutputBuffer[BT_COM_BUFFER_SIZE];
 
 void InitBluetooth(unsigned long baudRate){
   byte brNum =BaudToFlag(baudRate);
@@ -48,7 +49,11 @@ void InitBluetooth(unsigned long baudRate){
   }
   DEBUG_PRINTLN(btStatus);
   Serial2.begin(btBaudRate);
-  
+  //reset all command buffers
+  for (byte i=0; i<BT_COM_BUFFER_SIZE; i++){
+    btInputBuffer[i].ttl=0;
+    btOutputBuffer[i].ttl=0;
+  }
 }
 // possible baudRate values
 //1——1200    2——2400    3——4800    4——9600 
@@ -92,34 +97,61 @@ void BtSetNameAndPass(char *btName, unsigned int btCode){
     Serial2.read();
 }
 
-void ProcessBLuetooth(){
+struct BtCommand* GetNextCommandPlace(BtCommand buffer[], byte bufLen=BT_COM_BUFFER_SIZE){
+  byte minTtl=255;
+  byte minTtlIndex=bufLen;
+  bufLen--;
+  for (; bufLen>=0; bufLen--){
+    if (buffer[bufLen].ttl==0)
+      return &buffer[bufLen];
+    else if(buffer[bufLen].ttl > BT_KEEP_TTL && buffer[bufLen].ttl<minTtl){
+      minTtl = buffer[bufLen].ttl;
+      minTtlIndex = bufLen;
+    }
+  }
+  return &buffer[minTtlIndex];
+}
+void CheckBtStatusAndPing(){
+  unsigned long deltaMillis = lastBtMillis-lastBtReceiveMillis;
+  if (deltaMillis > 5*BT_PING_INTERVAL){
+    btStatus=1;
+    SendServiceCommand(0,0);
+  }
+  else if (deltaMillis > BT_PING_INTERVAL)
+    SendServiceCommand(0,0);
+  else 
+    btStatus=2;
+}
+
+void ProcessBluetooth(){
   //error or disabled
   if (btStatus==0 || btStatus==3)
     return;
+  //TODO: process ttl here weighted on time
   lastBtMillis=millis();
-  ParseReceived();
-  unsigned long deltaMillis = lastBtMillis-lastBtReceiveMillis;
-  if (deltaMillis > 3*BT_PING_INTERVAL)
-    btStatus=1;
-  else if (deltaMillis > BT_PING_INTERVAL)
-    SendServiceCommand(0,0);
-  else {
-    btStatus=2;
-    SendCommands();
+  for (byte i=BT_COM_BUFFER_SIZE; i>=0; i--){
+    if (btInputBuffer[i].ttl > 0)
+      btInputBuffer[i].ttl--;
+    if (btOutputBuffer[i].ttl > 0)
+      btOutputBuffer[i].ttl--;
   }
+  ParseReceived();
+  CheckBtStatusAndPing();
+  if (btStatus==2)
+    SendCommands();
 }
 
 void ParseReceived(){
   if (!Serial2.available())
     return;
-
   //clear old data in the buffer
   if (receivedDataIdx > 0  && lastBtMillis-lastBtReceiveMillis > 1000){
     receivedDataIdx=0;
     isPacketStarted=false;
   }
   lastBtReceiveMillis = lastBtMillis;
-  // service paket syntax <!commandNumber,1 byte of data!>
+  btStatus=2;
+  // service paket syntax <!commandNumber,2 bytes of data!>
   // commandNumber 0-10 are service commands, others are regular:
   // regular paket syntax <!commandNumber,pktNumber,isResponceFlag,6argsLength,data!>
   boolean startEncountered = false;
@@ -156,31 +188,121 @@ void ParseReceived(){
         receivedDataIdx++;
       // parse packet
       else {
-        PacketToCommand();     
+        PacketToCommand(receivedData+startDelimLength, receivedDataIdx - endDelimLength - startDelimLength);     
         receivedDataIdx=0;
         isPacketStarted=false;
       }
     }
   }
 }
+
 void PacketToCommand(byte *buffer, byte len){
-  if (len<3+3+2) //minimal possible length
+#if defined(DEBUG)
+  Serial.print("Raw packet data: ");
+  for (byte i=0; i<len; i++)
+    Serial.print(buffer[i]);
+  Serial.println();
+#endif
+
+  byte comNum = buffer[0];
+  if ( len < 3 || (len >= 6 && comNum < 10) || len > 40){
+    SendServiceCommand(2,(int)&buffer[1]);
+    DEBUG_PRINT("bad request!");
     return;
-  
-  //service packet
-  if (len<3+3+6){ 
-    if (buffer[3]<)
   }
-  //byte estimatedPacketLength;
-  
+  DEBUG_PRINT("Command: ");
+  if (comNum==0) { //ping, reply ping
+    SendServiceCommand(0,1);
+    DEBUG_PRINTLN("Ping");
+  }
+  else if (comNum==1) { // ok result. clear this packet from outgoing buffer
+    DEBUG_PRINTLN("OK");
+    int pkt = buffer[1]+(buffer[2]<<8);
+    for (byte i=BT_COM_BUFFER_SIZE-1; i>=0; i++){
+      if (btOutputBuffer[i].packageNumber==pkt){
+        btOutputBuffer[i].ttl=0;
+        break;
+      }
+    }
+  }
+  else if (comNum==2) { // error on receive or bad request format) { resend the oldest outgoing command
+    DEBUG_PRINTLN("Bad request");
+    //SendRegularCommand()
+  }
+  else if (comNum==3) { // unknown command number, nothing to do
+    DEBUG_PRINTLN("unknown command for phone");
+  }
+//else if (comNum==4) { 
+//}
+else if (comNum==5) { //set robot mode
+  SetMode(buffer[1]);
+  DEBUG_PRINTLN("Set mode");
 }
-void SendServiceCommand(byte commandNumber, byte argument){
-  byte out[6] = {BT_START_DELIMITER[0],BT_START_DELIMITER[1],commandNumber,argument,BT_END_DELIMITER[0],BT_END_DELIMITER[1]};
-  Serial2.write(out,6);
+else if (comNum==6) { // power off
+  DEBUG_PRINTLN("PowerOff Received");
+  SelfPowerOff();
 }
-void SendCommands(){
+  else if (comNum==9) { // print command list
+    //PrintCommandList();
+  }
+  else if (comNum>=10) { //translate to regular command
+    BtCommand* comm = GetNextCommandPlace(btInputBuffer);
+    comm->commandNumber = comNum;
+    comm->packageNumber = buffer[1]+(buffer[2]<<8);
+    comm->isResult=buffer[3];
+    byte totalDataLength = 0;
+    byte i=0;
+    for (; i<6; i++){
+      comm->argLengths[i]=buffer[i+4];
+      totalDataLength+=buffer[i+4];
+    }
+    //bad request
+    if (i+4+totalDataLength > len){
+      comm->ttl=0;
+      SendServiceCommand(2,comm->packageNumber);
+      DEBUG_PRINT("bad request!");
+    } 
+    else { // all ok for now,copy data
+      memcpy(buffer+i+4, comm->args, totalDataLength);
+      comm->ttl=255;
+      DEBUG_PRINT(comNum);
+    }
+  }
+  else { //send command unknown
+    SendServiceCommand(3,comNum);
+    DEBUG_PRINT(comNum);
+    DEBUG_PRINT(" unknown service command number");
+  }
 }
 
-struct BtCommand* GetCommandPlace(BtCommand* buffer, byte bufLen){
-  return btOutputBuffer;
+void SendServiceCommand(byte commandNumber, int argument){
+  Serial2.write(BT_START_DELIMITER);
+  Serial2.write(commandNumber);
+  Serial2.write(argument);
+  Serial2.write(BT_END_DELIMITER);
+}
+
+void SendRegularCommand(struct BtCommand *comm){
+  //if this is first send
+  if (comm->ttl > BT_KEEP_TTL){
+    comm->ttl = BT_KEEP_TTL;
+    comm->packageNumber=globalPacketNumber++;
+  }
+  byte totalDataLength=0;
+  for (byte i=0; i<6; i++)
+    totalDataLength +=comm->argLengths[i];
+    
+  Serial2.write(BT_START_DELIMITER);
+  Serial2.write(comm->commandNumber);
+  Serial2.write(comm->packageNumber);
+  Serial2.write(comm->isResult);
+  Serial2.write(comm->argLengths,6);
+  Serial2.write(comm->args,totalDataLength);
+  Serial2.write(BT_END_DELIMITER);
+}
+
+void SendCommands(){
+  for (byte i=BT_COM_BUFFER_SIZE; i>=0; i--)
+    if (btOutputBuffer[i].ttl > BT_KEEP_TTL)
+      SendRegularCommand(&btOutputBuffer[i]);
 }
