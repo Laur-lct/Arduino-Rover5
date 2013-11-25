@@ -49,7 +49,7 @@ void setup() {
   InitIRSensor();
   InitServiceInterrupt();
   CenterHead();
-  InitCompass();
+  //InitCompass();
   InitBluetooth();
   //setup finished
   statusLED1->off();

@@ -124,15 +124,13 @@ BtCommand* GetNextBtCommand(BtCommand buffer[]=btInputBuffer, byte bufLen=BT_COM
   if (!anyCommandToExecute)
     return NULL;
   byte minTtl=255;
-  byte minTtlIndex=255;
+  byte minTtlIndex=0;
   for (byte i=0; i<bufLen; i++){
     if(buffer[i].ttl > 0 && buffer[i].ttl<minTtl){
       minTtl = buffer[i].ttl;
       minTtlIndex = i; 
     }
   }
-    DEBUG_PRINT("Get next command idx =");
-    DEBUG_PRINTLN(minTtlIndex);
   if (minTtl==255) {
     anyCommandToExecute=false;
     return NULL;
@@ -306,8 +304,8 @@ else if (comNum==6) { // power off
     } 
     else { // all ok for now,copy data
       memcpy(comm->args, buffer+i+4, totalDataLength);
-      comm->ttl=255;
       SendServiceCommand(1,comm->packageNumber); //send OK
+      comm->ttl=254;
       anyCommandToExecute = true;
       DEBUG_PRINT(comNum);
     }
@@ -346,7 +344,7 @@ void SendRegularCommand(struct BtCommand *comm){
 }
 
 //this is used in strategies
-void ComposeBtCommand(byte commNumber, boolean isResponse, 
+void EnqueueBtCommand(byte commNumber, boolean isResponse, 
                         byte argLen1, void *argValPtr1, 
                         byte argLen2=0, void *argValPtr2=0, 
                         byte argLen3=0, void *argValPtr3=0,
@@ -384,17 +382,27 @@ void ComposeBtCommand(byte commNumber, boolean isResponse,
       }
     }
   } 
-  comm->ttl = 255;
+  comm->ttl = 254;
 }
 
 //returns number of arguments and array of pointers to each argument
 struct BtCommandArgument* GetBtCommandArguments(BtCommand *comm, byte* totalArgsNum){
   byte totalDataLength=0;
   BtCommandArgument args[6];
-  *totalArgsNum=0;
+  (*totalArgsNum)=0;
+//  DEBUG_PRINTLN("GETTING ARGS: ");
   for (byte i=0; i<6; i++){
-    if (comm->argLengths[i]>0){
-      *totalArgsNum++;
+//       DEBUG_PRINT(i);
+//      DEBUG_PRINT(": l=");
+//      DEBUG_PRINT(comm->argLengths[i]);
+//      DEBUG_PRINT(", val=");
+//      for (int j =0; j<comm->argLengths[i]; j++){
+//        DEBUG_PRINT(*(comm->args+totalDataLength+j));
+//        DEBUG_PRINT(",");
+//      }
+//      DEBUG_PRINTLN();
+    if (comm->argLengths[i] > 0){
+      (*totalArgsNum)++;
       args[i].length = comm->argLengths[i];
       args[i].valPtr = comm->args+totalDataLength;
       totalDataLength+=comm->argLengths[i];
@@ -404,6 +412,8 @@ struct BtCommandArgument* GetBtCommandArguments(BtCommand *comm, byte* totalArgs
       args[i].valPtr = NULL;
     }
   }
+//  DEBUG_PRINT(" ARGS NUM: ");
+//  DEBUG_PRINTLN(*totalArgsNum);
   return args;
 }
 

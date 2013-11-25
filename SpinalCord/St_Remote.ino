@@ -19,10 +19,9 @@ boolean ProcessIncomingCommands(){
   BtCommand *comm = GetNextBtCommand();
   if (!comm || comm->isResult)
     return false;
-  DEBUG_PRINTLN("Got");
+  
   byte argCount;
   BtCommandArgument* args = GetBtCommandArguments(comm, &argCount);
-  
   switch (comm->commandNumber){
     case 10:  //move fvd
       MoveForward(*(byte*)args[0].valPtr,*(unsigned int*)args[1].valPtr,*(boolean*)args[2].valPtr);
