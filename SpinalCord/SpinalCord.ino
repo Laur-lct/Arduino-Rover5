@@ -17,7 +17,7 @@
 #include <FreeIMU.h>
 #include <Wire.h>
 
-#include "_sharedMethods.h"
+#include "_shared.h"
 
 typedef void (*functionPtr)();
 
@@ -47,11 +47,10 @@ void setup() {
   InitModeAndModeButton();
   InitStrategyMethods();
   InitIRSensor();
-  InitCompass();
-  InitBluetooth();
   InitServiceInterrupt();
   CenterHead();
-  delay(300);
+  InitCompass();
+  InitBluetooth();
   //setup finished
   statusLED1->off();
 }
@@ -87,6 +86,10 @@ void InitStrategyMethods() {
   strategyMethods[0][MODE_LIGHTSEEKER] = StartStrategyLightSeeker;
   strategyMethods[1][MODE_LIGHTSEEKER] = RunStrategyLightSeeker;
   strategyMethods[2][MODE_LIGHTSEEKER] = FinishStrategyLightSeeker;
+  
+  strategyMethods[0][MODE_REMOTECONTROL] = StartStrategyRemote;
+  strategyMethods[1][MODE_REMOTECONTROL] = RunStrategyRemote;
+  strategyMethods[2][MODE_REMOTECONTROL] = FinishStrategyRemote;
 }
 
 //loops through button-selectable modes. Triggered by button interrupt

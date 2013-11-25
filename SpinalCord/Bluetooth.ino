@@ -9,9 +9,9 @@ byte isPacketStarted=false;
 byte receivedData[64];
 byte receivedDataIdx=0;
 const byte startDelimLength = strlen(BT_START_DELIMITER); 
-const byte endDelimLength = strlen(BT_END_DELIMITER); 
+const byte endDelimLength = strlen(BT_END_DELIMITER);
 
-struct BtCommand {
+typedef struct BtCommand {
   byte commandNumber;
   unsigned int packageNumber;
   byte ttl;
@@ -20,28 +20,37 @@ struct BtCommand {
   byte args[30];
 };
 
+typedef struct BtCommandArgument {
+  byte length;
+  void *valPtr;
+};
+
 BtCommand btInputBuffer[BT_COM_BUFFER_SIZE];
 BtCommand btOutputBuffer[BT_COM_BUFFER_SIZE];
+// is set when smth received
+boolean anyCommandToExecute=false;
 
 void InitBluetooth(unsigned long baudRate){
+  
+  DEBUG_PRINT("Bluetooth Init: ");
   byte brNum =BaudToFlag(baudRate);
   btBaudRate=FlagToBaud(brNum);
   Serial2.begin(btBaudRate);
   Serial2.print("AT");
-  delay(5);
+  delay(600);
   if (!Serial2.available()){
     btStatus=3;
     char str[9] = "AT+BAUD0";
     str[7] = 48 + brNum; //asci code
     for (byte i=8; i>0; i--){
       Serial2.begin(FlagToBaud(i));
-      delay(10);
+      delay(100);
       Serial2.write(str);
-      delay(10);
+      delay(600);
       if (Serial2.available()>0) break;
     }
   }
-  DEBUG_PRINT("Bluetooth Init: ");
+  
   while(Serial2.available()){
     brNum = Serial2.read();
     DEBUG_PRINT((char)brNum);
@@ -89,28 +98,48 @@ void BtSetNameAndPass(char *btName, unsigned int btCode){
   char str[64];
   sprintf(str, "AT+NAME%s",btName);
   Serial2.print(str);
-  delay(10);
+  delay(600);
   sprintf(str, "AT+PIN%d",btCode);
   Serial2.print(str);
-  delay(10);
+  delay(600);
   while(Serial2.available())
     Serial2.read();
 }
 
-struct BtCommand* GetNextCommandPlace(BtCommand buffer[], byte bufLen=BT_COM_BUFFER_SIZE){
+BtCommand* GetNextBtCommandPlace(BtCommand buffer[], byte bufLen=BT_COM_BUFFER_SIZE){
   byte minTtl=255;
-  byte minTtlIndex=bufLen;
-  bufLen--;
-  for (; bufLen>=0; bufLen--){
-    if (buffer[bufLen].ttl==0)
-      return &buffer[bufLen];
-    else if(buffer[bufLen].ttl > BT_KEEP_TTL && buffer[bufLen].ttl<minTtl){
-      minTtl = buffer[bufLen].ttl;
-      minTtlIndex = bufLen;
+  byte minTtlIndex=0;
+  for (byte i=0; i<bufLen; i++){
+    if (buffer[i].ttl==0)
+      return &buffer[i];
+    else if(buffer[i].ttl > BT_KEEP_TTL && buffer[i].ttl<minTtl){
+      minTtl = buffer[i].ttl;
+      minTtlIndex = i;
     }
   }
   return &buffer[minTtlIndex];
 }
+
+BtCommand* GetNextBtCommand(BtCommand buffer[]=btInputBuffer, byte bufLen=BT_COM_BUFFER_SIZE){
+  if (!anyCommandToExecute)
+    return NULL;
+  byte minTtl=255;
+  byte minTtlIndex=255;
+  for (byte i=0; i<bufLen; i++){
+    if(buffer[i].ttl > 0 && buffer[i].ttl<minTtl){
+      minTtl = buffer[i].ttl;
+      minTtlIndex = i; 
+    }
+  }
+    DEBUG_PRINT("Get next command idx =");
+    DEBUG_PRINTLN(minTtlIndex);
+  if (minTtl==255) {
+    anyCommandToExecute=false;
+    return NULL;
+  }
+  return &buffer[minTtlIndex];
+}
+
 void CheckBtStatusAndPing(){
   unsigned long deltaMillis = lastBtMillis-lastBtReceiveMillis;
   if (deltaMillis > 5*BT_PING_INTERVAL){
@@ -124,12 +153,13 @@ void CheckBtStatusAndPing(){
 }
 
 void ProcessBluetooth(){
+  
   //error or disabled
   if (btStatus==0 || btStatus==3)
     return;
   //TODO: process ttl here weighted on time
   lastBtMillis=millis();
-  for (byte i=BT_COM_BUFFER_SIZE; i>=0; i--){
+  for (byte i=0; i<BT_COM_BUFFER_SIZE; i++){
     if (btInputBuffer[i].ttl > 0)
       btInputBuffer[i].ttl--;
     if (btOutputBuffer[i].ttl > 0)
@@ -156,8 +186,11 @@ void ParseReceived(){
   // regular paket syntax <!commandNumber,pktNumber,isResponceFlag,6argsLength,data!>
   boolean startEncountered = false;
   boolean endEncountered = false;
+  //DEBUG_PRINT("BT received: ");
   while (Serial2.available()){
     receivedData[receivedDataIdx] = (char)Serial2.read();
+    //DEBUG_PRINT(receivedData[receivedDataIdx]);
+    //DEBUG_PRINT(", ");
     //check for for package start
     if (receivedDataIdx > 1 
         && receivedData[receivedDataIdx]==BT_START_DELIMITER[2] 
@@ -181,26 +214,32 @@ void ParseReceived(){
     }
     else {
       // found start more than once
-      if (startEncountered)
+      if (startEncountered){
         receivedDataIdx=3; //delim length
+        startEncountered=false;
+      }
       // receive packet data
       else if (!endEncountered)
         receivedDataIdx++;
       // parse packet
       else {
-        PacketToCommand(receivedData+startDelimLength, receivedDataIdx - endDelimLength - startDelimLength);     
+        PacketToCommand(receivedData+startDelimLength, receivedDataIdx - endDelimLength - startDelimLength + 1);     
         receivedDataIdx=0;
         isPacketStarted=false;
       }
     }
   }
+  DEBUG_PRINTLN();
+    
 }
 
 void PacketToCommand(byte *buffer, byte len){
 #if defined(DEBUG)
   Serial.print("Raw packet data: ");
-  for (byte i=0; i<len; i++)
+  for (byte i=0; i<len; i++){
     Serial.print(buffer[i]);
+    Serial.print(", ");
+  }
   Serial.println();
 #endif
 
@@ -211,14 +250,15 @@ void PacketToCommand(byte *buffer, byte len){
     return;
   }
   DEBUG_PRINT("Command: ");
-  if (comNum==0) { //ping, reply ping
-    SendServiceCommand(0,1);
+  if (comNum==0) { //ping, reply ping, if that is asked
+    if (buffer[1]>0)
+      SendServiceCommand(0,1);
     DEBUG_PRINTLN("Ping");
   }
   else if (comNum==1) { // ok result. clear this packet from outgoing buffer
     DEBUG_PRINTLN("OK");
     int pkt = buffer[1]+(buffer[2]<<8);
-    for (byte i=BT_COM_BUFFER_SIZE-1; i>=0; i++){
+    for (byte i=0; i<BT_COM_BUFFER_SIZE; i++){
       if (btOutputBuffer[i].packageNumber==pkt){
         btOutputBuffer[i].ttl=0;
         break;
@@ -227,7 +267,9 @@ void PacketToCommand(byte *buffer, byte len){
   }
   else if (comNum==2) { // error on receive or bad request format) { resend the oldest outgoing command
     DEBUG_PRINTLN("Bad request");
-    //SendRegularCommand()
+    BtCommand *comm = GetNextBtCommand(btOutputBuffer);
+    if (comm!= NULL && comm->ttl < BT_KEEP_TTL)
+      SendRegularCommand(comm);
   }
   else if (comNum==3) { // unknown command number, nothing to do
     DEBUG_PRINTLN("unknown command for phone");
@@ -246,7 +288,7 @@ else if (comNum==6) { // power off
     //PrintCommandList();
   }
   else if (comNum>=10) { //translate to regular command
-    BtCommand* comm = GetNextCommandPlace(btInputBuffer);
+    BtCommand* comm = GetNextBtCommandPlace(btInputBuffer);
     comm->commandNumber = comNum;
     comm->packageNumber = buffer[1]+(buffer[2]<<8);
     comm->isResult=buffer[3];
@@ -263,8 +305,10 @@ else if (comNum==6) { // power off
       DEBUG_PRINT("bad request!");
     } 
     else { // all ok for now,copy data
-      memcpy(buffer+i+4, comm->args, totalDataLength);
+      memcpy(comm->args, buffer+i+4, totalDataLength);
       comm->ttl=255;
+      SendServiceCommand(1,comm->packageNumber); //send OK
+      anyCommandToExecute = true;
       DEBUG_PRINT(comNum);
     }
   }
@@ -301,8 +345,70 @@ void SendRegularCommand(struct BtCommand *comm){
   Serial2.write(BT_END_DELIMITER);
 }
 
+//this is used in strategies
+void ComposeBtCommand(byte commNumber, boolean isResponse, 
+                        byte argLen1, void *argValPtr1, 
+                        byte argLen2=0, void *argValPtr2=0, 
+                        byte argLen3=0, void *argValPtr3=0,
+                        byte argLen4=0, void *argValPtr4=0,
+                        byte argLen5=0, void *argValPtr5=0, 
+                        byte argLen6=0, void *argValPtr6=0){
+  BtCommand *comm = GetNextBtCommandPlace(btOutputBuffer);
+  byte totalDataLength=0;
+  comm->commandNumber = commNumber;
+  comm->isResult = isResponse;
+  comm->argLengths[0] = argLen1;
+  memcpy(comm->args, argValPtr1, argLen1);
+  if (argLen2!=0){
+    totalDataLength+=argLen1;
+    comm->argLengths[1] = argLen2;
+    memcpy(comm->args+totalDataLength,argValPtr2, argLen2);
+    if (argLen3!=0){
+      totalDataLength+=argLen2;
+      comm->argLengths[2] = argLen3;
+      memcpy(comm->args+totalDataLength, argValPtr3, argLen3);
+      if (argLen4!=0){
+        totalDataLength+=argLen3;
+        comm->argLengths[3] = argLen4;
+        memcpy(comm->args+totalDataLength, argValPtr4, argLen4);
+        if (argLen5!=0){
+          totalDataLength+=argLen4;
+          comm->argLengths[4] = argLen5;
+          memcpy(comm->args+totalDataLength, argValPtr5, argLen5);
+          if (argLen6!=0){
+            totalDataLength+=argLen5;
+            comm->argLengths[5] = argLen6;
+            memcpy(comm->args+totalDataLength, argValPtr6, argLen6);
+          }
+        }
+      }
+    }
+  } 
+  comm->ttl = 255;
+}
+
+//returns number of arguments and array of pointers to each argument
+struct BtCommandArgument* GetBtCommandArguments(BtCommand *comm, byte* totalArgsNum){
+  byte totalDataLength=0;
+  BtCommandArgument args[6];
+  *totalArgsNum=0;
+  for (byte i=0; i<6; i++){
+    if (comm->argLengths[i]>0){
+      *totalArgsNum++;
+      args[i].length = comm->argLengths[i];
+      args[i].valPtr = comm->args+totalDataLength;
+      totalDataLength+=comm->argLengths[i];
+    }
+    else {
+      args[i].length = 0;
+      args[i].valPtr = NULL;
+    }
+  }
+  return args;
+}
+
 void SendCommands(){
-  for (byte i=BT_COM_BUFFER_SIZE; i>=0; i--)
+  for (byte i=0; i<BT_COM_BUFFER_SIZE; i++)
     if (btOutputBuffer[i].ttl > BT_KEEP_TTL)
       SendRegularCommand(&btOutputBuffer[i]);
 }

@@ -13,8 +13,14 @@
     #define DEBUG_PRINTLN(x)
 #endif
 #define EEPROM_READ_INT(addr) (int)(((EEPROM.read(addr) << 0) & 0xFF) + ((EEPROM.read(addr+1) << 8) & 0xFF00))
-#define MODES_MAX 4 //total number of modes
+
+#define MODES_MAX 5 //total number of modes
 #define MODES_MIN_BROWSABLE 1 //minimum mode index, that could be set via mode button.
+#define MODE_FREEIMU_CALIB 0 //compass calibration mode
+#define MODE_BLINKER 1 // genius strategy of blinking with status led 2 
+#define MODE_LIGHTSEEKER 2 // robot will try to turn to strongest light source
+#define MODE_TEST 3
+#define MODE_REMOTECONTROL 4
 
 #define BT_NAME "Rover5"
 #define BT_CODE 7463
@@ -23,12 +29,6 @@
 #define BT_END_DELIMITER "!!>"
 #define BT_PING_INTERVAL 500 //milliseconds
 #define BT_KEEP_TTL 10 //sets how long the commands are kept in buffer since they were sent
-
-
-#define MODE_FREEIMU_CALIB 0 //compass calibration mode
-#define MODE_BLINKER 1 // genius strategy of blinking with status led 2 
-#define MODE_LIGHTSEEKER 2 // robot will try to turn to strongest light source
-#define MODE_TEST 3
 
 //indicates correct forward direction flag for each shaft.
 #define MOTOR_FWD_T 0
