@@ -43,8 +43,12 @@ void ServiceTimerRoutine(){
   else if (newVoltage < 8 && isCharging>0)
     isCharging = 0;
   currVoltage = newVoltage;
-  if (currVoltage<minVoltage)
+  if (currVoltage<minVoltage){
     minVoltage=currVoltage;
+    //low voltage protection
+    if (minVoltage<=4.6)
+      SelfPowerOff();  
+  }
   
   //ir bumper
   if(digitalReadFast(PO_IRBUMPER_SWITCH)){

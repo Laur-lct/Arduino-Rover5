@@ -16,9 +16,10 @@ void StartStrategyBlinker() {
 void RunStrategyBlinker() {
   statusLED2->setValue(1);
   //DBG_ONLY(Serial.println("blinking..."));
-  //DBG_ONLY(Serial.print("Batt voltage="));
-  DEBUG_PRINT("Light: ");
-  DEBUG_PRINTLN(analogRead(PA_LIGHTSENSOR_R));
+  DEBUG_PRINT("Batt voltage=");
+  DEBUG_PRINTLN(currVoltage);
+  //DEBUG_PRINT("Light: ");
+  //DEBUG_PRINTLN(analogRead(PA_LIGHTSENSOR_R));
   /*DBG_ONLY(Serial.print("current draw="));
   DBG_ONLY(Serial.println(currentConsumption));
   DBG_ONLY(Serial.print("currentDraw = "));
