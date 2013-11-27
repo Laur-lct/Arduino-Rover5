@@ -8,6 +8,7 @@ void StartStrategyBlinker() {
   DEBUG_PRINT("freeMemory()=");
   DEBUG_PRINTLN(freeMemory());
   DBG_ONLY(delay(1000));
+  DBG_ONLY(PrintMotorCache());
   blinkerDelay=250;
   blinkerCntr=0;
   delay(20);

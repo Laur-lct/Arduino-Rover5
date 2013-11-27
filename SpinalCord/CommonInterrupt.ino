@@ -32,10 +32,14 @@ void ServiceTimerRoutine(){
   //unsigned long ms = millis();
   SoftwareServo::refresh();
   commonInterruptCntr++;
-  if(commonInterruptCntr%3!=0)
-    return;
   //voltage
   float newVoltage = (float)analogRead(PA_BATT_VOLTAGE)/101.38f;
+  if (newVoltage<minVoltage){
+    minVoltage=newVoltage;
+    //low voltage protection
+    if (minVoltage<5.0)
+      SelfPowerOff();  
+  }
   if (newVoltage > 7.9 && newVoltage - currVoltage > 0.01){
     isCharging++;
     minVoltage=10;
@@ -43,13 +47,8 @@ void ServiceTimerRoutine(){
   else if (newVoltage < 8 && isCharging>0)
     isCharging = 0;
   currVoltage = newVoltage;
-  if (currVoltage<minVoltage){
-    minVoltage=currVoltage;
-    //low voltage protection
-    if (minVoltage<=4.6)
-      SelfPowerOff();  
-  }
-  
+  if(commonInterruptCntr%3!=0)
+    return;
   //ir bumper
   if(digitalReadFast(PO_IRBUMPER_SWITCH)){
     

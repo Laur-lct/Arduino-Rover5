@@ -44,7 +44,7 @@ void InitBluetooth(unsigned long baudRate){
     str[7] = 48 + brNum; //asci code
     for (byte i=8; i>0; i--){
       Serial2.begin(FlagToBaud(i));
-      delay(100);
+      delay(50);
       Serial2.write(str);
       delay(600);
       if (Serial2.available()>0) break;
@@ -199,7 +199,7 @@ void ParseReceived(){
     }
     else if (receivedDataIdx > 1
        && receivedData[receivedDataIdx]==BT_END_DELIMITER[2]
-       && receivedData[receivedDataIdx-1]==BT_START_DELIMITER[1] 
+       && receivedData[receivedDataIdx-1]==BT_END_DELIMITER[1] 
        && receivedData[receivedDataIdx-2]==BT_END_DELIMITER[0])
       endEncountered =true;
       
@@ -217,17 +217,20 @@ void ParseReceived(){
         startEncountered=false;
       }
       // receive packet data
-      else if (!endEncountered)
-        receivedDataIdx++;
+      else if (!endEncountered){
+        if (receivedDataIdx<64-3)
+          receivedDataIdx++;
+      }
       // parse packet
       else {
-        PacketToCommand(receivedData+startDelimLength, receivedDataIdx - endDelimLength - startDelimLength + 1);     
+        if (receivedDataIdx > (endDelimLength + startDelimLength + 1))
+          PacketToCommand(receivedData+startDelimLength, receivedDataIdx - endDelimLength - startDelimLength + 1);     
         receivedDataIdx=0;
         isPacketStarted=false;
       }
     }
   }
-  DEBUG_PRINTLN();
+  //DEBUG_PRINTLN();
     
 }
 
@@ -238,13 +241,14 @@ void PacketToCommand(byte *buffer, byte len){
     Serial.print(buffer[i]);
     Serial.print(", ");
   }
-  Serial.println();
+  Serial.print("len=");
+  Serial.println(len);
 #endif
 
   byte comNum = buffer[0];
   if ( len < 3 || (len >= 6 && comNum < 10) || len > 40){
     SendServiceCommand(2,(int)&buffer[1]);
-    DEBUG_PRINT("bad request!");
+    DEBUG_PRINTLN("bad request!");
     return;
   }
   DEBUG_PRINT("Command: ");
@@ -300,20 +304,20 @@ else if (comNum==6) { // power off
     if (i+4+totalDataLength > len){
       comm->ttl=0;
       SendServiceCommand(2,comm->packageNumber);
-      DEBUG_PRINT("bad request!");
+      DEBUG_PRINTLN("bad request!");
     } 
     else { // all ok for now,copy data
       memcpy(comm->args, buffer+i+4, totalDataLength);
       SendServiceCommand(1,comm->packageNumber); //send OK
       comm->ttl=254;
       anyCommandToExecute = true;
-      DEBUG_PRINT(comNum);
+      DEBUG_PRINTLN(comNum);
     }
   }
   else { //send command unknown
     SendServiceCommand(3,comNum);
     DEBUG_PRINT(comNum);
-    DEBUG_PRINT(" unknown service command number");
+    DEBUG_PRINTLN(" unknown service command number");
   }
 }
 
@@ -390,17 +394,7 @@ struct BtCommandArgument* GetBtCommandArguments(BtCommand *comm, byte* totalArgs
   byte totalDataLength=0;
   BtCommandArgument args[6];
   (*totalArgsNum)=0;
-//  DEBUG_PRINTLN("GETTING ARGS: ");
   for (byte i=0; i<6; i++){
-//       DEBUG_PRINT(i);
-//      DEBUG_PRINT(": l=");
-//      DEBUG_PRINT(comm->argLengths[i]);
-//      DEBUG_PRINT(", val=");
-//      for (int j =0; j<comm->argLengths[i]; j++){
-//        DEBUG_PRINT(*(comm->args+totalDataLength+j));
-//        DEBUG_PRINT(",");
-//      }
-//      DEBUG_PRINTLN();
     if (comm->argLengths[i] > 0){
       (*totalArgsNum)++;
       args[i].length = comm->argLengths[i];
@@ -412,8 +406,6 @@ struct BtCommandArgument* GetBtCommandArguments(BtCommand *comm, byte* totalArgs
       args[i].valPtr = NULL;
     }
   }
-//  DEBUG_PRINT(" ARGS NUM: ");
-//  DEBUG_PRINTLN(*totalArgsNum);
   return args;
 }
 
