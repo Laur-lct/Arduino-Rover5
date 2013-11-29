@@ -222,7 +222,7 @@ void CalibrateMotors(){
   //diagonals
   //changed |= SyncMotorPair(0, 2); // TL and BR
   //changed |= SyncMotorPair(1, 3); // TR and BL
-  
+  //DEBUG_PRINTLN();
   if (realPowerAbs[0]<desiredPowerAbs[0] && realPowerAbs[1]<desiredPowerAbs[1] && realPowerAbs[2]<desiredPowerAbs[2] && realPowerAbs[3]<desiredPowerAbs[3]){
     realPowerAbs[0]++;
     realPowerAbs[1]++;
@@ -252,38 +252,40 @@ boolean SyncMotorPair(byte motorIndex1, byte motorIndex2){
   if (realPowerAbs[motorIndex1] == 0 || realPowerAbs[motorIndex2] == 0)
     return false;
   if (currentSpeedAbs[motorIndex2] < 3){
-    realPowerAbs[motorIndex2]++;
+    realPowerAbs[motorIndex2]+=min(5,255-realPowerAbs[motorIndex2]);
     return true;
   }
   if (currentSpeedAbs[motorIndex1] < 3){
-    realPowerAbs[motorIndex1]++;
+    realPowerAbs[motorIndex1]+=min(5,255-realPowerAbs[motorIndex1]);;
     return true;
   }
-  float ratioDiff = ((float)currentSpeedAbs[motorIndex1] / currentSpeedAbs[motorIndex2]) - ((float)desiredPowerAbs[motorIndex1] / desiredPowerAbs[motorIndex2]);
+  float ratioDiff = (float)currentSpeedAbs[motorIndex1] / (currentSpeedAbs[motorIndex1] + currentSpeedAbs[motorIndex2])
+                  - (float)desiredPowerAbs[motorIndex1] / ((unsigned int)desiredPowerAbs[motorIndex1] + desiredPowerAbs[motorIndex2]);
+  float ratioDiffAbs = abs(ratioDiff);
   char absDiff1 = realPowerAbs[motorIndex1] - desiredPowerAbs[motorIndex1];
   char absDiff2 = realPowerAbs[motorIndex2] - desiredPowerAbs[motorIndex2];
   boolean isSameSign = (absDiff1 ^ absDiff2) >= 0;
-
+  byte changeAmount = (ratioDiffAbs>0.25 ? 4 : (ratioDiffAbs>0.08 ? 2 : 1));
   //DEBUG_PRINT(ratioDiff);
   //DEBUG_PRINT('\t');
   //motorIndex1 speed compared to motorIndex2 speed is slower then desired
-  if (ratioDiff < -0.2f){
+  if (ratioDiff < -0.02f){
     // here we have two options - either speed up motorIndex1 or slow down motorIndex2.
     // we choose that change, which will keep overall real power closer to desired value
     // e. g. any motor will always try to keep its power as close to desired as possible.
     if (realPowerAbs[motorIndex1] < 255 && ((!isSameSign && absDiff1 <= absDiff2) || (isSameSign && absDiff1 >= absDiff2)))
-      realPowerAbs[motorIndex1]++;
+      realPowerAbs[motorIndex1]+=min(changeAmount,255-realPowerAbs[motorIndex1]);
     else
-      realPowerAbs[motorIndex2]--;
+      realPowerAbs[motorIndex2]-=changeAmount;
     return true;
   }
   //motorIndex1 speed compared to motorIndex2 speed is faster then desired
   else if (ratioDiff > 0.02f){
     // same two options - either slow down motorIndex1 or speed up motorIndex2.
     if (realPowerAbs[motorIndex2] == 255 || (isSameSign && absDiff1 <= absDiff2) || (!isSameSign && absDiff1 >= absDiff2))
-      realPowerAbs[motorIndex1]--;
+      realPowerAbs[motorIndex1]-=changeAmount;
     else
-      realPowerAbs[motorIndex2]++;
+      realPowerAbs[motorIndex2]+=min(changeAmount,255-realPowerAbs[motorIndex2]);;
     return true;
   }
   return false;
