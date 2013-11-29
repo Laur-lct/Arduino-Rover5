@@ -276,14 +276,14 @@ boolean SyncMotorPair(byte motorIndex1, byte motorIndex2){
     if (realPowerAbs[motorIndex1] < 255 && ((!isSameSign && absDiff1 <= absDiff2) || (isSameSign && absDiff1 >= absDiff2)))
       realPowerAbs[motorIndex1]+=min(changeAmount,255-realPowerAbs[motorIndex1]);
     else
-      realPowerAbs[motorIndex2]-=changeAmount;
+      realPowerAbs[motorIndex2]-=min(changeAmount,realPowerAbs[motorIndex2];
     return true;
   }
   //motorIndex1 speed compared to motorIndex2 speed is faster then desired
   else if (ratioDiff > 0.02f){
     // same two options - either slow down motorIndex1 or speed up motorIndex2.
     if (realPowerAbs[motorIndex2] == 255 || (isSameSign && absDiff1 <= absDiff2) || (!isSameSign && absDiff1 >= absDiff2))
-      realPowerAbs[motorIndex1]-=changeAmount;
+      realPowerAbs[motorIndex1]-=min(changeAmount,realPowerAbs[motorIndex1]);
     else
       realPowerAbs[motorIndex2]+=min(changeAmount,255-realPowerAbs[motorIndex2]);;
     return true;
