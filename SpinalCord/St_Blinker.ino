@@ -10,6 +10,7 @@ void StartStrategyBlinker() {
   DBG_ONLY(delay(1000));
   DBG_ONLY(PrintMotorCache());
   blinkerDelay=250;
+  MoveForward(35,80,true);
   blinkerCntr=0;
   delay(20);
 }

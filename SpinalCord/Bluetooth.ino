@@ -247,7 +247,7 @@ void PacketToCommand(byte *buffer, byte len){
 
   byte comNum = buffer[0];
   if ( len < 3 || (len >= 6 && comNum < 10) || len > 40){
-    SendServiceCommand(2,(int)&buffer[1]);
+    SendServiceCommand(2,*((int *)(&buffer[1])));
     DEBUG_PRINTLN("bad request!");
     return;
   }
