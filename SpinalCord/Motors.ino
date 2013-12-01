@@ -211,8 +211,7 @@ void StopMoving() {
 void CalibrateMotors(){
   //prevent timer to trigger interrupt again while calibrating
   Timer1.detachInterrupt();
-  DEBUG_PRINT("Calibrating...");
-  unsigned long ms =millis();
+  //DEBUG_PRINT("Calibrating...");
   
   boolean changed=false;
   //sides
@@ -245,8 +244,6 @@ void CalibrateMotors(){
   analogWrite(PP_MOTOR_SPD_TR,realPowerAbs[1]);
   analogWrite(PP_MOTOR_SPD_BR,realPowerAbs[2]);
   analogWrite(PP_MOTOR_SPD_BL,realPowerAbs[3]);
-  
-  DEBUG_PRINTLN(millis()-ms);
   //set interrupt back
   Timer1.attachInterrupt(TimerInterruptHandler);
 }

@@ -8,9 +8,8 @@ void StartStrategyBlinker() {
   DEBUG_PRINT("freeMemory()=");
   DEBUG_PRINTLN(freeMemory());
   DBG_ONLY(delay(1000));
-  DBG_ONLY(PrintMotorCache());
+  //DBG_ONLY(PrintMotorCache());
   blinkerDelay=250;
-  MoveForward(35,80,true);
   blinkerCntr=0;
   delay(20);
 }
@@ -18,8 +17,8 @@ void StartStrategyBlinker() {
 void RunStrategyBlinker() {
   statusLED2->setValue(1);
   //DBG_ONLY(Serial.println("blinking..."));
-  DEBUG_PRINT("Batt voltage=");
-  DEBUG_PRINTLN(currVoltage);
+  //DEBUG_PRINT("Batt voltage=");
+  //DEBUG_PRINTLN(currVoltage);
   //DEBUG_PRINT("Light: ");
   //DEBUG_PRINTLN(analogRead(PA_LIGHTSENSOR_R));
   /*DBG_ONLY(Serial.print("current draw="));

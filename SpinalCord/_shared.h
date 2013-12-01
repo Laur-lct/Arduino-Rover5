@@ -11,7 +11,7 @@ float rawCompassVals[11];
 boolean isCompassEnabled=false;
 FreeIMU my3IMU = FreeIMU();
 
-void InitBluetooth(unsigned long baudRate=38400);
+void InitBluetooth(unsigned long baudRate=115200);
 
 
 

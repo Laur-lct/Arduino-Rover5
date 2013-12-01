@@ -1,5 +1,5 @@
 //all bluetooth related functions will go here
-unsigned long btBaudRate=38400;
+unsigned long btBaudRate=115200;
 byte btStatus=0; // 0 - non initialized or disabled; 1 - initialized; 2 - connected; 3 - error
 
 unsigned long lastBtMillis;
@@ -77,7 +77,7 @@ unsigned long FlagToBaud(byte btFlag){
   if (btFlag==2) return 2400;
   if (btFlag==1) return 1200;
 //else return default
-  return 38400;
+  return 9600;
 }
 byte BaudToFlag(unsigned long baudRate){
   if (baudRate==115200) return 8;
@@ -89,7 +89,7 @@ byte BaudToFlag(unsigned long baudRate){
   if (baudRate==2400) return 2;
   if (baudRate==1200) return 1;
   //else return default
-  return 6;
+  return 4;
 }
 
 void BtSetNameAndPass(char *btName, unsigned int btCode){
@@ -224,7 +224,9 @@ void ParseReceived(){
       // parse packet
       else {
         if (receivedDataIdx > (endDelimLength + startDelimLength + 1))
-          PacketToCommand(receivedData+startDelimLength, receivedDataIdx - endDelimLength - startDelimLength + 1);     
+          PacketToCommand(receivedData+startDelimLength, receivedDataIdx - endDelimLength - startDelimLength + 1);
+        else 
+          SendServiceCommand(2,0); //bad request
         receivedDataIdx=0;
         isPacketStarted=false;
       }
