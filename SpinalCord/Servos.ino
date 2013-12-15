@@ -25,6 +25,11 @@ void SetHeadPos(int panAngle, int tiltAngle){
   SetHeadTilt(tiltAngle);
 }
 
+void SetHeadPosDelta(int deltaPanAngle, int deltaTiltAngle){
+  SetHeadPan(currentPan+deltaPanAngle);
+  SetHeadTilt(currentTilt+deltaTiltAngle);
+}
+
 //angle relative to the center '-' = left '+' = right. 
 void SetHeadPan(int panAngle){
  int realPan = HEAD_PAN_CENTER - panAngle;

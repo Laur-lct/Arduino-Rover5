@@ -164,7 +164,7 @@ void ProcessBluetooth(){
       btOutputBuffer[i].ttl--;
   }
   ParseReceived();
-  CheckBtStatusAndPing();
+  //CheckBtStatusAndPing();
   if (btStatus==2)
     SendCommands();
 }
@@ -184,12 +184,12 @@ void ParseReceived(){
   // regular paket syntax <!commandNumber,pktNumber,isResponceFlag,6argsLength,data!>
   boolean startEncountered = false;
   boolean endEncountered = false;
-  //DEBUG_PRINT("BT received: ");
+  DEBUG_PRINT("BT received: ");
   while (Serial2.available()){
     receivedData[receivedDataIdx] = (char)Serial2.read();
-    //DEBUG_PRINT(receivedData[receivedDataIdx]);
-    //DEBUG_PRINT(", ");
-    //check for for package start
+    DEBUG_PRINT(receivedData[receivedDataIdx]);
+    DEBUG_PRINT(", ");
+    //check for package start
     if (receivedDataIdx > 1 
         && receivedData[receivedDataIdx]==BT_START_DELIMITER[2] 
         && receivedData[receivedDataIdx-1]==BT_START_DELIMITER[1] 
@@ -229,23 +229,25 @@ void ParseReceived(){
           SendServiceCommand(2,0); //bad request
         receivedDataIdx=0;
         isPacketStarted=false;
+        startEncountered=false;
+        endEncountered=false;
       }
     }
   }
-  //DEBUG_PRINTLN();
+  DEBUG_PRINTLN();
     
 }
 
 void PacketToCommand(byte *buffer, byte len){
-#if defined(DEBUG)
-  Serial.print("Raw packet data: ");
-  for (byte i=0; i<len; i++){
-    Serial.print(buffer[i]);
-    Serial.print(", ");
-  }
-  Serial.print("len=");
-  Serial.println(len);
-#endif
+//#if defined(DEBUG)
+//  Serial.print("Raw packet data: ");
+//  for (byte i=0; i<len; i++){
+//    Serial.print(buffer[i]);
+//    Serial.print(", ");
+//  }
+//  Serial.print("len=");
+//  Serial.println(len);
+//#endif
 
   byte comNum = buffer[0];
   if ( len < 3 || (len >= 6 && comNum < 10) || len > 40){
@@ -255,13 +257,13 @@ void PacketToCommand(byte *buffer, byte len){
   }
   DEBUG_PRINT("Command: ");
   if (comNum==0) { //ping, reply ping, if that is asked
-    if (buffer[1]>0)
+    if (buffer[1]==0)
       SendServiceCommand(0,1);
     DEBUG_PRINTLN("Ping");
   }
   else if (comNum==1) { // ok result. clear this packet from outgoing buffer
     DEBUG_PRINTLN("OK");
-    int pkt = buffer[1]+(buffer[2]<<8);
+    unsigned int pkt = buffer[1]+(buffer[2]<<8);
     for (byte i=0; i<BT_COM_BUFFER_SIZE; i++){
       if (btOutputBuffer[i].packageNumber==pkt){
         btOutputBuffer[i].ttl=0;
@@ -280,14 +282,16 @@ void PacketToCommand(byte *buffer, byte len){
   }
 //else if (comNum==4) { 
 //}
-else if (comNum==5) { //set robot mode
-  SetMode(buffer[1]);
-  DEBUG_PRINTLN("Set mode");
-}
-else if (comNum==6) { // power off
-  DEBUG_PRINTLN("PowerOff Received");
-  SelfPowerOff();
-}
+  else if (comNum==5) { //set robot mode
+    SetMode(buffer[1]);
+    SendServiceCommand(1,0); //send OK
+    DEBUG_PRINTLN("Set mode");
+  }
+  else if (comNum==6) { // power off
+    DEBUG_PRINTLN("PowerOff Received");
+    SendServiceCommand(1,0); //send OK
+    SelfPowerOff();
+  }
   else if (comNum==9) { // print command list
     //PrintCommandList();
   }
@@ -326,7 +330,7 @@ else if (comNum==6) { // power off
 void SendServiceCommand(byte commandNumber, int argument){
   Serial2.write(BT_START_DELIMITER);
   Serial2.write(commandNumber);
-  Serial2.write(argument);
+  Serial2.write((byte *)(&argument),2);
   Serial2.write(BT_END_DELIMITER);
 }
 
@@ -340,9 +344,31 @@ void SendRegularCommand(struct BtCommand *comm){
   for (byte i=0; i<6; i++)
     totalDataLength +=comm->argLengths[i];
     
+    
+#if defined(DEBUG)
+  Serial.print("BT Sent: ");
+  Serial.print(comm->commandNumber);
+  Serial.print(", ");
+  Serial.print((byte)comm->packageNumber);
+  Serial.print(", ");
+  Serial.print((byte)comm->packageNumber/256);
+  Serial.print(", ");
+  Serial.print((byte)comm->isResult);
+  Serial.print(", ");
+  for (byte i=0; i<6; i++){
+    Serial.print(comm->argLengths[i]);
+    Serial.print(", ");
+  }
+  for (byte i=0; i<totalDataLength; i++){
+    Serial.print(comm->args[i]);
+    Serial.print(", ");
+  }
+#endif
+  
+    
   Serial2.write(BT_START_DELIMITER);
   Serial2.write(comm->commandNumber);
-  Serial2.write(comm->packageNumber);
+  Serial2.write((byte *)(&comm->packageNumber),2);
   Serial2.write(comm->isResult);
   Serial2.write(comm->argLengths,6);
   Serial2.write(comm->args,totalDataLength);
@@ -362,26 +388,26 @@ void EnqueueBtCommand(byte commNumber, boolean isResponse,
   comm->commandNumber = commNumber;
   comm->isResult = isResponse;
   comm->argLengths[0] = argLen1;
+  comm->argLengths[1] = argLen2;
+  comm->argLengths[2] = argLen3;
+  comm->argLengths[3] = argLen4;
+  comm->argLengths[4] = argLen5;
+  comm->argLengths[5] = argLen6;
   memcpy(comm->args, argValPtr1, argLen1);
   if (argLen2!=0){
     totalDataLength+=argLen1;
-    comm->argLengths[1] = argLen2;
     memcpy(comm->args+totalDataLength,argValPtr2, argLen2);
     if (argLen3!=0){
       totalDataLength+=argLen2;
-      comm->argLengths[2] = argLen3;
       memcpy(comm->args+totalDataLength, argValPtr3, argLen3);
       if (argLen4!=0){
         totalDataLength+=argLen3;
-        comm->argLengths[3] = argLen4;
         memcpy(comm->args+totalDataLength, argValPtr4, argLen4);
         if (argLen5!=0){
           totalDataLength+=argLen4;
-          comm->argLengths[4] = argLen5;
           memcpy(comm->args+totalDataLength, argValPtr5, argLen5);
           if (argLen6!=0){
             totalDataLength+=argLen5;
-            comm->argLengths[5] = argLen6;
             memcpy(comm->args+totalDataLength, argValPtr6, argLen6);
           }
         }
@@ -389,6 +415,11 @@ void EnqueueBtCommand(byte commNumber, boolean isResponse,
     }
   } 
   comm->ttl = 254;
+}
+
+void EnqueueStringMessage(char * msg, int len)
+{
+   EnqueueBtCommand(255,true,min(len,30),msg);
 }
 
 //returns number of arguments and array of pointers to each argument

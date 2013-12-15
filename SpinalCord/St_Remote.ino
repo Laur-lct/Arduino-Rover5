@@ -23,7 +23,7 @@ boolean ProcessIncomingCommands(){
   byte argCount;
   BtCommandArgument* args = GetBtCommandArguments(comm, &argCount);
   switch (comm->commandNumber){
-    case 10:  //move fvd
+    case 10:  //move fwd
       MoveForward(*(byte*)args[0].valPtr,*(unsigned int*)args[1].valPtr,*(boolean*)args[2].valPtr);
     break;
     case 11:  //move backwd
@@ -35,11 +35,24 @@ boolean ProcessIncomingCommands(){
     case 13:  //turn right
       TurnRight(*(byte*)args[0].valPtr,*(unsigned int*)args[1].valPtr,*(boolean*)args[2].valPtr);
     break;
-    case 14:  //stop moving
+    case 14:  //move wheels
+      
+    break;
+    case 15:  //stop moving
       StopMoving();
     break;
-    case 15:  //move wheels
+    
+    case 19:  //SetHeadPosDelta
+      SetHeadPosDelta(*(int*)args[0].valPtr,*(int*)args[1].valPtr);
+      EnqueueBtCommand(19,true,1,&currentPan,1,&currentTilt);
     break;
+    
+    case 20:  //currentVoltage
+    DEBUG_PRINT("Voltage:");
+      DEBUG_PRINTLN(currVoltage);
+      EnqueueBtCommand(20,true,4,&currVoltage);
+    break;
+
     default: 
       SendServiceCommand(3,comm->commandNumber);
       DEBUG_PRINT("unknown command number: ");
